@@ -18,9 +18,9 @@ class AlatController extends Controller
             $result = $alatService->store($payload);
             
             if (!$result) {
-                return $this->responseError("nama alat already use", 409);
+                return $this->responseError($alatService->getErrorMessage(), $alatService->getCode());
             }
-            return $this->responseSuccess("success add alat", $result);
+            return $this->responseSuccess("success add alat", $alatService->getData());
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }
@@ -43,10 +43,10 @@ class AlatController extends Controller
         $alatService = new AlatService();
         try {
             $result = $alatService->findById($id);
-            if(!$result){
-                return $this->responseError("id " . $id . " not found", 404);
+            if (!$result) {
+                return $this->responseError($alatService->getErrorMessage(), $alatService->getCode());
             }
-            return $this->responseSuccess("success get all alat", $result);
+            return $this->responseSuccess("success get all alat", $alatService->getData());
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }
@@ -59,10 +59,10 @@ class AlatController extends Controller
             $payload = $req->validated();
             $result = $alatService->update($id, $payload);
             if (!$result) {
-                return $this->responseError("id " . $id . " not found", 404);
+                return $this->responseError($alatService->getErrorMessage(), $alatService->getCode());
             }
 
-            return $this->responseSuccess("success update new kategori", $payload, 201);
+            return $this->responseSuccess("success update new kategori", $alatService->getData(), 201);
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }
@@ -73,9 +73,9 @@ class AlatController extends Controller
         try {
             $result = $alatService->destroy($id);
             if (!$result) {
-                return $this->responseError("id " . $id . " not found", 404);
+                return $this->responseError($alatService->getErrorMessage(), $alatService->getCode());
             }
-            return $this->responseSuccess("success delete kategori");
+            return $this->responseSuccess("success delete kategori",$alatService->getData());
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }

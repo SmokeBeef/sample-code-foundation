@@ -8,22 +8,24 @@ class AlatService
 {
     use ServiceTrait;
 
-    public function store(array $data): bool|Alat
+    public function store(array $data): bool
     {
         try {
-            $isNameTaken = $this->findByNama($data["alat_nama"]);
-            if ($isNameTaken) {
+            $result = Alat::createOrException($data);
+
+            if ($result instanceof Exception) {
+                $this->setError($result->getMessage(), $result->getCode());
                 return false;
             }
-            $result = Alat::create($data);
 
-            return $result;
+            $this->setData($result);
+            return true;
         } catch (Exception $err) {
             throw $err;
         }
     }
 
-    public function findAll()
+    public function findAll(): bool
     {
         try {
             $result = Alat::all();
@@ -34,30 +36,32 @@ class AlatService
         }
     }
 
-    public function findById($id)
+    public function findById($id): bool
     {
         try {
             $result = Alat::find($id);
-            if(!$result){
+            if (!$result) {
+                $this->setError("alat id $id not found", 404);
                 return false;
             }
-            return $result;
+            $this->setData($result->toArray());
+            return true;
         } catch (Exception $err) {
             throw $err;
         }
     }
 
-    public function update($id, $data)
+    public function update($id, $data): bool
     {
         try {
-            $alat = Alat::find($id);
-            if(!$alat){
+            $result = Alat::updateOrException($id, $data);
+            if ($result instanceof Exception) {
+                $this->setError($result->getMessage(), $result->getCode());
                 return false;
             }
 
-            $alat->update($data);
-
-            return $alat;
+            $this->setData($result);
+            return true;
         } catch (Exception $err) {
             throw $err;
         }
@@ -66,14 +70,14 @@ class AlatService
     public function destroy($id)
     {
         try {
-            $alat = Alat::find($id);
-            if(!$alat){
+            $result = Alat::deleteOrException($id);
+            if ($result instanceof Exception) {
+                $this->setError($result->getMessage(), $result->getCode());
                 return false;
             }
 
-            $alat->delete();
-
-            return $alat;
+            $this->setData($result);
+            return true;
         } catch (Exception $err) {
             throw $err;
         }
