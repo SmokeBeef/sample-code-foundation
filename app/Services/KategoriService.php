@@ -11,27 +11,23 @@ class KategoriService
     use ServiceTrait;
     protected $redisKey = "kategori";
     protected $redisKeyFull = "kategoriJoinAlat";
-    protected $kategori;
-
-    public function __construct(Kategori $kategori)
-    {
-        $this->kategori = $kategori;
-    }
 
     public function store(array $data)
     {
+
         try {
 
-            $result = Kategori::store($data);
+            $result = Kategori::createOrException($data);
 
-            if ($result) {
-                $this->setError("admin username already taken", 409);
+            if ($result instanceof Exception) {
+                $this->setError($result->getMessage(), $result->getCode());
                 return false;
             }
 
-            $result = $this->kategori->create($data);
             Redis::del($this->redisKey);
             Redis::del($this->redisKeyFull);
+
+            $this->setData($result);
             return $result;
         } catch (Exception $err) {
             throw $err;
@@ -45,9 +41,12 @@ class KategoriService
             if (Redis::exists($this->redisKey)) {
                 $result = json_decode(Redis::get($this->redisKey));
             } else {
-                $result = $this->kategori->all();
+                $result = kategori::all();
                 Redis::set($this->redisKey, $result);
+                $result = $result->toArray();
             }
+
+            $this->setData($result);
             return $result;
         } catch (Exception $err) {
             throw $err;
@@ -56,11 +55,13 @@ class KategoriService
     public function findByIdFull($id)
     {
         try {
-            $result = $this->kategori->with("alat")->find($id);
+            $result = Kategori::with("alat")->find($id);
             if (!$result) {
+                $this->setError("kategori id $id not found", 404);
                 return false;
             }
-            $result->with("alat")->get();
+
+            $this->setData($result->toArray());
             return $result;
         } catch (Exception $err) {
             throw $err;
@@ -74,9 +75,12 @@ class KategoriService
             if (Redis::exists($this->redisKeyFull)) {
                 $result = json_decode(Redis::get($this->redisKeyFull));
             } else {
-                $result = $this->kategori->with("alat")->get();
+                $result = Kategori::with("alat")->get();
                 Redis::set($this->redisKeyFull, $result);
+                $result = $result->toArray();
             }
+
+            $this->setData($result);
             return $result;
         } catch (Exception $err) {
             throw $err;
@@ -86,14 +90,16 @@ class KategoriService
     public function update(int|string $id, array $data)
     {
         try {
-            $kategori = $this->kategori->find($id);
-            if (!$kategori) {
+            $result = Kategori::updateOrException($id, $data);
+            if ($result instanceof Exception) {
+                $this->setError($result->getMessage(), $result->getCode());
                 return false;
             }
-            $kategori->update($data);
             Redis::del($this->redisKey);
             Redis::del($this->redisKeyFull);
-            return $kategori;
+
+            $this->setData($result);
+            return true;
         } catch (Exception $err) {
             throw $err;
         }
@@ -101,19 +107,18 @@ class KategoriService
     public function destroy(int|string $id)
     {
         try {
-            $kategori = $this->kategori->find($id);
+            $result = Kategori::deleteOrException($id);
             // dd($kategori);
-            if (!$kategori) {
+            if ($result instanceof Exception) {
+                $this->setError($result->getMessage(), $result->getCode());
                 return false;
             }
-            $kategori->alat()->delete();
-            $kategori->delete();
             Redis::del($this->redisKey);
-
             Redis::del($this->redisKeyFull);
-            return $kategori;
+
+            $this->setData($result);
+            return true;
         } catch (Exception $err) {
-            dd($err);
             throw $err;
         }
     }

@@ -9,20 +9,18 @@ use Illuminate\Http\Request;
 
 class KategoriController extends Controller
 {
-    protected $kategoriService;
-    public function __construct(KategoriService $kategoriService)
-    {
-        $this->kategoriService = $kategoriService;
-    }
+
 
     public function store(KategoriRequest $req)
     {
+        $kategoriService = new KategoriService();
         try {
             $payload = $req->validated();
 
-            $result = $this->kategoriService->store($payload);
+            $result = $kategoriService->store($payload);
+            
             if (!$result) {
-                return $this->responseError($result->errorMessage, $result->errorCode);
+                return $this->responseError($kategoriService->getErrorMessage(), $kategoriService->getCode());
             }
 
             return $this->responseSuccess("success add new kategori", $payload, 201);
@@ -34,21 +32,23 @@ class KategoriController extends Controller
 
     public function findAll()
     {
+        $kategoriService = new KategoriService();
         try {
-            $result = $this->kategoriService->findAll();
+            $kategoriService->findAll();
 
-            return $this->responseManyData("success get all kategori", $result);
+            return $this->responseManyData("success get all kategori", $kategoriService->getData());
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }
     }
     public function findByIdFull($id)
     {
+        $kategoriService = new KategoriService();
         try {
-            $result = $this->kategoriService->findByIdFull($id);
+            $result = $kategoriService->findByIdFull($id);
 
             if (!$result) {
-                return $this->responseError("id " . $id . " not found", 404);
+                return $this->responseError($kategoriService->getErrorMessage(), $kategoriService->getCode());
             }
             return $this->responseManyData("success get all kategori", $result);
             
@@ -59,10 +59,11 @@ class KategoriController extends Controller
 
     public function findAllAlat()
     {
+        $kategoriService = new KategoriService();
         try {
-            $result = $this->kategoriService->findAllAlat();
+            $kategoriService->findAllAlat();
             
-            return $this->responseManyData("success get all kategori and alat", $result);
+            return $this->responseManyData("success get all kategori and alat", $kategoriService->getData());
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }
@@ -70,11 +71,12 @@ class KategoriController extends Controller
 
     public function update(KategoriRequest $req, $id)
     {
+        $kategoriService = new KategoriService();
         try {
             $payload = $req->validated();
-            $result = $this->kategoriService->update($id, $payload);
+            $result = $kategoriService->update($id, $payload);
             if (!$result) {
-                return $this->responseError("id " . $id . " not found", 404);
+                return $this->responseError($kategoriService->getErrorMessage(), $kategoriService->getCode());
             }
 
             return $this->responseSuccess("success update new kategori", $payload, 201);
@@ -84,12 +86,13 @@ class KategoriController extends Controller
     }
     public function destroy($id)
     {
+        $kategoriService = new KategoriService();
         try {
-            $result = $this->kategoriService->destroy($id);
+            $result = $kategoriService->destroy($id);
             if (!$result) {
-                return $this->responseError("id " . $id . " not found", 404);
+                return $this->responseError($kategoriService->getErrorMessage(), $kategoriService->getCode());
             }
-            return $this->responseSuccess("success delete kategori");
+            return $this->responseSuccess("success delete kategori", $kategoriService->getData());
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }
