@@ -20,7 +20,7 @@ class AdminController extends Controller
             $result = $adminService->store($payload);
 
             if (!$result) {
-                return $this->responseError($adminService->errorMessage, $adminService->errorCode);
+                return $this->responseError($adminService->getErrorMessage(), $adminService->getCode());
             }
 
             return $this->responseSuccess("success create new Admin", $adminService->data, 201);
@@ -49,10 +49,11 @@ class AdminController extends Controller
         try {
 
             $result = $adminService->destroy($id);
+           
             if (!$result) {
-                return $this->responseError($adminService->errorMessage, $adminService->errorCode);
+                return $this->responseError($adminService->getErrorMessage(), $adminService->getCode());
             }
-            return $this->responseSuccess("success delete Admin", $adminService->data, 200);
+            return $this->responseSuccess("success delete Admin", $adminService->getData(), 200);
         } catch (Exception $th) {
             return $this->responseError("There is Error in Server");
         }
