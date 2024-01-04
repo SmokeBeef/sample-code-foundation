@@ -25,21 +25,21 @@ class PenyewaanRequest extends FormRequest
     {
         // default for create 
         $rule = [
-            "pelanggan_id" => "required|numeric|exists:pelanggans,pelanggan_id",
-            "tglsewa" => "required|date|after:today",
-            "tglkembali" => "required|date|after:tglsewa",
-            "sttspembayaran" => "required|in:Lunas,Belum Dibayar,DP",
-            "sttskembali" => "required|in:Sudah Kembali,Belum Kembali",
-            "totalharga" => "required|numeric",
+            "penyewaan_pelanggan_id" => "required|numeric|exists:pelanggans,pelanggan_id",
+            "penyewaan_tglsewa" => "required|date|after_or_equal:today",
+            "penyewaan_tglkembali" => "required|date|after:tglsewa",
+            "penyewaan_sttspembayaran" => "required|in:Lunas,Belum Dibayar,DP",
+            "penyewaan_sttskembali" => "required|in:Sudah Kembali,Belum Kembali",
+            "penyewaan_totalharga" => "required|numeric",
 
-            "detail.*.alat_id" => "required|exists:alats,alat_id",
-            "detail.*.jumlah" => "required|numeric",
-            "detail.*.subharga" => "required|numeric",
+            "detail.*.penyewaan_detail_alat_id" => "required|exists:alats,alat_id",
+            "detail.*.penyewaan_detail_jumlah" => "required|numeric",
+            "detail.*.penyewaan_detail_subharga" => "required|numeric",
         ];
         if ($this->isMethod("PATCH")) {
             $rule = [
-                "sttspembayaran" => "nullable|in:Lunas,Belum Dibayar,DP",
-                "sttskembali" => "nullable|in:Sudah Kembali,Belum Kembali",
+                "penyewaan_sttspembayaran" => "nullable|in:Lunas,Belum Dibayar,DP",
+                "penyewaan_sttskembali" => "nullable|in:Sudah Kembali,Belum Kembali",
             ];
         }
 

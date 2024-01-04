@@ -60,7 +60,7 @@ Route::middleware("jwt")->group(function () {
     // penyewaan route
     Route::post("/penyewaan", [PenyewaanController::class, "store"]);
     Route::get("/penyewaan", [PenyewaanController::class, "findAll"]);
-    Route::get("/penyewaan/{id}/detail", [PenyewaanController::class, "findById"]);
+    Route::get("/penyewaan/{id}", [PenyewaanController::class, "findById"]);
     Route::patch("/penyewaan/{id}", [PenyewaanController::class, "update"]);
     Route::delete("/penyewaan/{id}", [PenyewaanController::class, "destroy"]);
 });
