@@ -12,16 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('penyewaans', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger("pelanggan_id")->nullable(false);
-            $table->date("tglsewa")->nullable(false);
-            $table->date("tglkembali")->nullable(false);
-            $table->enum("sttspembayaran", ["Lunas", "Belum Dibayar", "DP"])->default("Belum Dibayar")->nullable(false);
-            $table->enum("sttskembali", ["Sudah Kembali", "Belum Kembali"])->default("Belum Kembali")->nullable(false);
-            $table->integer("totalharga")->nullable(false);
+            $table->id("penyewaan_id");
+            $table->unsignedBigInteger("penyewaan_pelanggan_id")->nullable(false);
+            $table->date("penyewaan_tglsewa")->nullable(false);
+            $table->date("penyewaan_tglkembali")->nullable(false);
+            $table->enum("penyewaan_sttspembayaran", ["Lunas", "Belum Dibayar", "DP"])->default("Belum Dibayar")->nullable(false);
+            $table->enum("penyewaan_sttskembali", ["Sudah Kembali", "Belum Kembali"])->default("Belum Kembali")->nullable(false);
+            $table->integer("penyewaan_totalharga")->nullable(false);
             $table->timestamps();
             
-            $table->foreign("pelanggan_id")->on("pelanggans")->references("id");
+            $table->foreign("penyewaan_pelanggan_id")->on("pelanggans")->references("pelanggan_id");
         });
     }
 

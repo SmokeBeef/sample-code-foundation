@@ -25,14 +25,14 @@ class PenyewaanRequest extends FormRequest
     {
         // default for create 
         $rule = [
-            "pelanggan_id" => "required|numeric|exists:pelanggans,id",
-            "tglsewa" => "required|date|after:now",
+            "pelanggan_id" => "required|numeric|exists:pelanggans,pelanggan_id",
+            "tglsewa" => "required|date|after:today",
             "tglkembali" => "required|date|after:tglsewa",
             "sttspembayaran" => "required|in:Lunas,Belum Dibayar,DP",
             "sttskembali" => "required|in:Sudah Kembali,Belum Kembali",
             "totalharga" => "required|numeric",
 
-            "detail.*.alat_id" => "required|exists:alats,id",
+            "detail.*.alat_id" => "required|exists:alats,alat_id",
             "detail.*.jumlah" => "required|numeric",
             "detail.*.subharga" => "required|numeric",
         ];

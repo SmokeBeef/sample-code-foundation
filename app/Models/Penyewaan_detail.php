@@ -10,24 +10,24 @@ class Penyewaan_detail extends Model
 {
     use HasFactory;
     protected $table = "penyewaan_details";
-    protected $primaryKey = "id";
+    protected $primaryKey = "penyewaan_detail_id";
     protected $keyType = "int";
     public $timestamps = true;
     public $incrementing = true;
 
     protected $fillable = [
-        "penyewaan_id",
-        "alat_id",
-        "jumlah",
-        "subharga",
+        "penyewaan_detail_penyewaan_id",
+        "penyewaan_detail_alat_id",
+        "penyewaan_detail_jumlah",
+        "penyewaan_detail_subharga",
     ];
 
     public function penyewaan(): BelongsTo
     {
-        return $this->belongsTo(Penyewaan::class, "penyewaan_id", "id");
+        return $this->belongsTo(Penyewaan::class, "penyewaan_detail_penyewaan_id", "penyewaan_id");
     }
     public function alat(): BelongsTo
     {
-        return $this->belongsTo(Alat::class, "alat_id", "id");
+        return $this->belongsTo(Alat::class, "penyewaan_detail_alat_id", "alat_id");
     }
 }

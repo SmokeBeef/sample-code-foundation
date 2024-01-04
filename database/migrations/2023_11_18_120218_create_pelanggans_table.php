@@ -13,11 +13,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('pelanggans', function (Blueprint $table) {
-            $table->id();
-            $table->string("nama", 150)->nullable(false);
-            $table->string("alamat", 200)->nullable(false);
-            $table->string("notelp", 13)->nullable(false);
-            $table->string("email", 100)->nullable(false)->unique("pelanggan_email_unique");
+            $table->id("pelanggan_id");
+            $table->string("pelanggan_nama", 150)->nullable(false);
+            $table->string("pelanggan_alamat", 200)->nullable(false);
+            $table->string("pelanggan_notelp", 13)->nullable(false);
+            $table->string("pelanggan_email", 100)->nullable(false)->unique("pelanggan_email_unique");
             $table->timestamps();
         });
     }

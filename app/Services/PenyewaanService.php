@@ -13,17 +13,12 @@ use Illuminate\Support\Facades\DB;
 
 class PenyewaanService
 {
-    protected $penyewaan;
-    public function __construct(Penyewaan $penyewaan)
-    {
-        $this->penyewaan = $penyewaan;
-    }
 
     public function store(array $data, array $detailData)
     {
         DB::beginTransaction();
         try {
-            $result = $this->penyewaan->create($data);
+            $result = Penyewaan::create($data);
             $result->penyewaanDetail()->createMany($detailData);
 
             DB::commit();
@@ -44,7 +39,7 @@ class PenyewaanService
     public function findAll()
     {
         try {
-            $result = $this->penyewaan->all();
+            $result = Penyewaan::all();
             return $result;
         } catch (Exception $err) {
             throw $err;
@@ -54,7 +49,7 @@ class PenyewaanService
     public function findById($id)
     {
         try {
-            $result = $this->penyewaan->with("penyewaanDetail")->find($id);
+            $result = Penyewaan::with("penyewaanDetail")->find($id);
             if (!$result) {
                 return false;
             }
@@ -66,7 +61,7 @@ class PenyewaanService
     public function update($id, array $data)
     {
         try {
-            $result = $this->penyewaan->find($id);
+            $result = Penyewaan::find($id);
             if (!$result) {
                 return false;
             }
@@ -81,7 +76,7 @@ class PenyewaanService
     {
         DB::beginTransaction();
         try {
-            $result = $this->penyewaan->find($id);
+            $result = Penyewaan::find($id);
             if (!$result) {
                 DB::rollBack();
                 return false;

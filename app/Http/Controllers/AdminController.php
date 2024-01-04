@@ -10,23 +10,20 @@ use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
-    protected $adminService;
-    public function __construct(AdminService $adminService)
-    {
-        $this->adminService = $adminService;
-    }
+
     public function store(AdminRequest $req)
     {
+        $adminService = new AdminService();
         try {
 
             $payload = $req->validated();
-            $result = $this->adminService->store($payload);
+            $result = $adminService->store($payload);
 
             if (!$result) {
-                return $this->responseError("username already exist", 409);
+                return $this->responseError($adminService->errorMessage, $adminService->errorCode);
             }
 
-            return $this->responseSuccess("success create new Admin", $result, 201);
+            return $this->responseSuccess("success create new Admin", $adminService->data, 201);
         } catch (Exception $th) {
             return $this->responseError("There is Error in Server");
         }
@@ -35,25 +32,27 @@ class AdminController extends Controller
 
     public function findAll()
     {
+        $adminService = new AdminService();
         try {
 
-            $result = $this->adminService->findAll();
+            $adminService->findAll();
 
-            return $this->responseSuccess("success get All Admin", $result, 200);
+            return $this->responseSuccess("success get All Admin", $adminService->data, 200);
         } catch (Exception $th) {
             return $this->responseError("There is Error in Server");
         }
     }
-    
+
     public function destroy($id)
     {
+        $adminService = new AdminService();
         try {
 
-            $result = $this->adminService->destroy($id);
-            if(!$result){
-                return $this->responseError("id $id not found", 404);
+            $result = $adminService->destroy($id);
+            if (!$result) {
+                return $this->responseError($adminService->errorMessage, $adminService->errorCode);
             }
-            return $this->responseSuccess("success delete Admin", $result, 200);
+            return $this->responseSuccess("success delete Admin", $adminService->data, 200);
         } catch (Exception $th) {
             return $this->responseError("There is Error in Server");
         }

@@ -25,11 +25,11 @@ class AlatRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "kategori_id" => "required|numeric|exists:kategoris,id",
-            "nama" => "required|string|max:255",
-            "deskripsi" => "required|string|max:255",
-            "hargaperhari" => "required|numeric",
-            "stok" => "required|numeric",
+            "alat_kategori_id" => "required|numeric|exists:kategoris,kategori_id",
+            "alat_nama" => "required|string|max:255",
+            "alat_deskripsi" => "required|string|max:255",
+            "alat_hargaperhari" => "required|numeric",
+            "alat_stok" => "required|numeric",
         ];
     }
     protected function failedValidation(Validator $validator)

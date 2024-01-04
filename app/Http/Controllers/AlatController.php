@@ -9,17 +9,14 @@ use Illuminate\Http\Request;
 
 class AlatController extends Controller
 {
-    protected $alatService;
-    public function __construct(AlatService $alatService)
-    {
-        $this->alatService = $alatService;
-    }
-
+    
     public function store(AlatRequest $req)
     {
+        $alatService = new AlatService();
         try {
             $payload = $req->validated();
-            $result = $this->alatService->store($payload);
+            $result = $alatService->store($payload);
+            
             if (!$result) {
                 return $this->responseError("nama alat already use", 409);
             }
@@ -31,18 +28,21 @@ class AlatController extends Controller
 
     public function findAll()
     {
+        $alatService = new AlatService();
         try {
-            $result = $this->alatService->findAll();
 
-            return $this->responseSuccess("success get all alat", $result);
+            $result = $alatService->findAll();
+
+            return $this->responseManyData("success get all alat", $alatService->getData());
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }
     }
     public function findById($id)
     {
+        $alatService = new AlatService();
         try {
-            $result = $this->alatService->findById($id);
+            $result = $alatService->findById($id);
             if(!$result){
                 return $this->responseError("id " . $id . " not found", 404);
             }
@@ -54,9 +54,10 @@ class AlatController extends Controller
 
     public function update(AlatRequest $req, $id)
     {
+        $alatService = new AlatService();
         try {
             $payload = $req->validated();
-            $result = $this->alatService->update($id, $payload);
+            $result = $alatService->update($id, $payload);
             if (!$result) {
                 return $this->responseError("id " . $id . " not found", 404);
             }
@@ -68,8 +69,9 @@ class AlatController extends Controller
     }
     public function destroy($id)
     {
+        $alatService = new AlatService();
         try {
-            $result = $this->alatService->destroy($id);
+            $result = $alatService->destroy($id);
             if (!$result) {
                 return $this->responseError("id " . $id . " not found", 404);
             }

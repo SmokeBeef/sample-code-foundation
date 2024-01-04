@@ -16,21 +16,24 @@ class Controller extends BaseController
     {
         if (!$meta)
             return response()->json([
+                "status" => "success",
                 "code" => $code,
                 "message" => $message,
-                "datas" => $data,
+                "data" => $data,
             ], $code);
         else
             return response()->json([
+                "status" => "success",
                 "code" => $code,
                 "message" => $message,
-                "datas" => $data,
+                "data" => $data,
                 "meta" => $meta,
             ], $code);
     }
     protected function responseSuccess(string $message, mixed $data = null, int $code = 200): JsonResponse
     {
         return response()->json([
+            "status" => "success",
             "code" => $code,
             "message" => $message,
             "data" => $data
@@ -39,6 +42,7 @@ class Controller extends BaseController
     protected function responseError(string $message, int $code = 500, $data = null): JsonResponse
     {
         return response()->json([
+            "status" => "fail",
             "code" => $code,
             "message" => $message,
             "data" => $data

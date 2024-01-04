@@ -7,57 +7,60 @@ use Illuminate\Support\Facades\Redis;
 
 class AdminService
 {
+    use ServiceTrait;
     protected $redisKey = "admin";
-    protected $adminModel;
-    public function __construct(Admin $admin)
-    {
-        $this->adminModel = $admin;
-    }
-    public function store(array $data): bool|Admin
+
+    public function store(array $data): bool
     {
         try {
 
-            $checkUsername = $this->adminModel->where("username", $data["username"])->first();
+            $result = Admin::createOrNull($data);
 
-            if ($checkUsername) {
+            if (!$result) {
+                $this->setError("username already taken", 409);
                 return false;
             }
 
-            $result = $this->adminModel->create($data);
             Redis::del($this->redisKey);
-            return $result;
+
+            $this->setData($result);
+            return true;
         } catch (Exception $err) {
             throw $err;
         }
     }
 
-    public function findAll()
+    public function findAll(): bool
     {
         try {
             $result = null;
             if (Redis::exists($this->redisKey)) {
                 $result = Redis::get($this->redisKey);
             } else {
-                $result = $this->adminModel->all();
+                $result = Admin::all()->toArray();
                 Redis::set($this->redisKey, $result);
             }
-            return $result;
+
+            $this->setData($result);
+            return true;
         } catch (Exception $err) {
             throw $err;
         }
     }
 
-    public function destroy($id)
+    public function destroy($id): bool
     {
         try {
-            $result = $this->adminModel->find($id);
-            if(!$result){
+            $result = Admin::deleteOrNull($id);
+
+            if (!$result) {
+                $this->setError("id $id not found", 404);
                 return false;
             }
-            $result->delete();
-            return $result;
+            $this->setData($result);
+            return true;
         } catch (Exception $err) {
             throw $err;
-        }   
+        }
     }
 }

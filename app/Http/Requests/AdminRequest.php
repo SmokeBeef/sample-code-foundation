@@ -24,8 +24,8 @@ class AdminRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "username" => ["required", "max:50"],
-            "password" => ["required", "max:255"],
+            "admin_username" => ["required", "max:50"],
+            "admin_password" => ["required", "max:255"],
         ];
     }
 

@@ -11,26 +11,28 @@ class Penyewaan extends Model
 {
     use HasFactory;
     protected $table = "penyewaans";
-    protected $primaryKey = "id";
+    protected $primaryKey = "penyewaan_id";
     protected $keyType = "int";
     public $timestamps = true;
     public $incrementing = true;
 
     protected $fillable =[
-        "pelanggan_id", 
-        "tglsewa",
-        "tglkembali",
-        "sttspembayaran",
-        "sttskembali",
-        "totalharga",
+        "penyewaan_pelanggan_id", 
+        "penyewaan_tglsewa",
+        "penyewaan_tglkembali",
+        "penyewaan_sttspembayaran",
+        "penyewaan_sttskembali",
+        "penyewaan_totalharga",
     ];
 
     public function pelanggan(): BelongsTo
     {
-        return $this->belongsTo(Pelanggan::class, "pelanggan_id", "id");
+        return $this->belongsTo(Pelanggan::class, "penyewaan_pelanggan_id", "pelanggan_id");
     }
     public function penyewaanDetail(): HasMany
     {
-        return $this->hasMany(Penyewaan_detail::class, "penyewaan_id", "id");
+        return $this->hasMany(Penyewaan_detail::class, "penyewaan_detail_penyewaan_id", "penyewaan_id");
     }
+
+
 }

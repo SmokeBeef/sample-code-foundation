@@ -11,13 +11,13 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('pelanggan_datas', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger("pelanggan_id")->nullable(false);
-            $table->enum("jenis", ["KTP", "SIM"])->nullable(false);
-            $table->string("file", 255)->nullable(false);
+            $table->id("pelanggan_data_id");
+            $table->unsignedBigInteger("pelanggan_data_pelanggan_id")->nullable(false);
+            $table->enum("pelanggan_data_jenis", ["KTP", "SIM"])->nullable(false);
+            $table->string("pelanggan_data_file", 255)->nullable(false);
             $table->timestamps();
 
-            $table->foreign("pelanggan_id")->on("pelanggans")->references("id")->onDelete("CASCADE");
+            $table->foreign("pelanggan_data_pelanggan_id")->on("pelanggans")->references("pelanggan_id")->onDelete("CASCADE");
         });
     }
 

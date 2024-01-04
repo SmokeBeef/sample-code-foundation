@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('alats', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger("kategori_id")->nullable(false);
-            $table->string("nama")->nullable(false);
-            $table->string("deskripsi", 255)->nullable(false);
-            $table->integer("hargaperhari")->nullable(false);
-            $table->integer("stok")->nullable(false);
+            $table->id("alat_id");
+            $table->unsignedBigInteger("alat_kategori_id")->nullable(false);
+            $table->string("alat_nama")->nullable(false);
+            $table->string("alat_deskripsi", 255)->nullable(false);
+            $table->integer("alat_hargaperhari")->nullable(false);
+            $table->integer("alat_stok")->nullable(false);
             $table->timestamps();
 
-            $table->foreign("kategori_id")->on("kategoris")->references("id");
+            $table->foreign("alat_kategori_id")->on("kategoris")->references("kategori_id");
         });
     }
 

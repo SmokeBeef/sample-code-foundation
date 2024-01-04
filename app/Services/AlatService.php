@@ -6,20 +6,16 @@ use Exception;
 
 class AlatService
 {
-    protected $alat;
-    public function __construct(Alat $alat)
-    {
-        $this->alat = $alat;
-    }
+    use ServiceTrait;
 
     public function store(array $data): bool|Alat
     {
         try {
-            $isNameTaken = $this->findByNama($data["nama"]);
+            $isNameTaken = $this->findByNama($data["alat_nama"]);
             if ($isNameTaken) {
                 return false;
             }
-            $result = $this->alat->create($data);
+            $result = Alat::create($data);
 
             return $result;
         } catch (Exception $err) {
@@ -30,9 +26,9 @@ class AlatService
     public function findAll()
     {
         try {
-            $result = $this->alat->all();
-
-            return $result;
+            $result = Alat::all();
+            $this->setData($result->toArray());
+            return true;
         } catch (Exception $err) {
             throw $err;
         }
@@ -41,7 +37,7 @@ class AlatService
     public function findById($id)
     {
         try {
-            $result = $this->alat->find($id);
+            $result = Alat::find($id);
             if(!$result){
                 return false;
             }
@@ -54,7 +50,7 @@ class AlatService
     public function update($id, $data)
     {
         try {
-            $alat = $this->alat->find($id);
+            $alat = Alat::find($id);
             if(!$alat){
                 return false;
             }
@@ -70,7 +66,7 @@ class AlatService
     public function destroy($id)
     {
         try {
-            $alat = $this->alat->find($id);
+            $alat = Alat::find($id);
             if(!$alat){
                 return false;
             }
@@ -89,7 +85,7 @@ class AlatService
     protected function findByNama($nama): bool
     {
         try {
-            $result = $this->alat->where("nama", $nama)->first();
+            $result = Alat::where("alat_nama", $nama)->first();
             return !!$result;
         } catch (Exception $err) {
             throw $err;

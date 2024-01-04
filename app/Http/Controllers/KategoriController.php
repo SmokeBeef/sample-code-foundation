@@ -22,7 +22,7 @@ class KategoriController extends Controller
 
             $result = $this->kategoriService->store($payload);
             if (!$result) {
-                return $this->responseError("nama Kategori already use", 409);
+                return $this->responseError($result->errorMessage, $result->errorCode);
             }
 
             return $this->responseSuccess("success add new kategori", $payload, 201);

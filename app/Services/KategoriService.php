@@ -8,21 +8,24 @@ use Illuminate\Support\Facades\Redis;
 
 class KategoriService
 {
+    use ServiceTrait;
     protected $redisKey = "kategori";
     protected $redisKeyFull = "kategoriJoinAlat";
     protected $kategori;
+
     public function __construct(Kategori $kategori)
     {
         $this->kategori = $kategori;
     }
 
-    public function store(array $data): bool|Kategori
+    public function store(array $data)
     {
         try {
 
-            $checkKategori = $this->kategori->where("nama", $data["nama"])->first();
+            $result = Kategori::store($data);
 
-            if ($checkKategori) {
+            if ($result) {
+                $this->setError("admin username already taken", 409);
                 return false;
             }
 
