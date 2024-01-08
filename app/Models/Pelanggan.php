@@ -33,7 +33,7 @@ class Pelanggan extends Model
         return $this->hasMany(Penyewaan::class, "penyewaan_pelanggan_id", "pelanggan_id");
     }
 
-    public static function createCheckEmail($pelanggan, $pelangganData): Exception|array
+    public static function createOrException($pelanggan, $pelangganData): Exception|array
     {
         DB::beginTransaction();
         try {

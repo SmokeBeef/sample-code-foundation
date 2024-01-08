@@ -26,7 +26,7 @@ class PelangganService
             // set path to save in database
             $pelangganData["pelanggan_data_file"] = "storage/" . $path;
 
-            $result = Pelanggan::createCheckEmail($data, $pelangganData);
+            $result = Pelanggan::createOrException($data, $pelangganData);
             if ($result instanceof Exception) {
                 $this->setError($result->getMessage(), $result->getCode());
                 return false;

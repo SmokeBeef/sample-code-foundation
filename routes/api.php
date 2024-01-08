@@ -26,8 +26,8 @@ Route::get("/admin/refresh", [AuthController::class, "refreshToken"])->middlewar
 Route::delete("/admin/logout", [AuthController::class, "logout"])->middleware('jwt');
 
 // Admin Route
-Route::post("/admin", [AdminController::class, "store"]);
-Route::get("/admin", [AdminController::class, "findAll"]);
+Route::post("/admin", [AdminController::class, "create"]);
+Route::get("/admin", [AdminController::class, "index"]);
 
 // Route Using Token 
 Route::middleware("jwt")->group(function () {
@@ -36,31 +36,30 @@ Route::middleware("jwt")->group(function () {
     Route::delete("admin/{id}", [AdminController::class, "destroy"]);
     
     // kategori route
-    Route::post("/kategori", [KategoriController::class, "store"]);
-    Route::get("/kategori", [KategoriController::class, "findAll"]);
-    Route::get("/kategori/{id}/alat", [KategoriController::class, "findByIdFull"]);
-    Route::get("/kategori/alat", [KategoriController::class, "findAllAlat"]);
+    Route::post("/kategori", [KategoriController::class, "create"]);
+    Route::get("/kategori", [KategoriController::class, "index"]);
+    Route::get("/kategori/{id}/alat", [KategoriController::class, "show"]);
     Route::put("/kategori/{id}", [KategoriController::class, "update"]);
     Route::delete("/kategori/{id}", [KategoriController::class, "destroy"]);
     
     // alat route
-    Route::post("/alat", [AlatController::class, "store"]);
-    Route::get("/alat", [AlatController::class, "findAll"]);
-    Route::get("/alat/{id}", [AlatController::class, "findById"]);
+    Route::post("/alat", [AlatController::class, "create"]);
+    Route::get("/alat", [AlatController::class, "index"]);
+    Route::get("/alat/{id}", [AlatController::class, "show"]);
     Route::put("/alat/{id}", [AlatController::class, "update"]);
     Route::delete("/alat/{id}", [AlatController::class, "destroy"]);
 
     // pelanggan route
-    Route::post("/pelanggan", [PelangganController::class, "store"]);
-    Route::get("/pelanggan", [PelangganController::class, "findAll"]);
-    Route::get("/pelanggan/{id}", [PelangganController::class, "findById"]);
+    Route::post("/pelanggan", [PelangganController::class, "create"]);
+    Route::get("/pelanggan", [PelangganController::class, "index"]);
+    Route::get("/pelanggan/{id}", [PelangganController::class, "show"]);
     Route::put("/pelanggan/{id}", [PelangganController::class, "update"]);
     Route::delete("/pelanggan/{id}", [PelangganController::class, "destroy"]);
 
     // penyewaan route
-    Route::post("/penyewaan", [PenyewaanController::class, "store"]);
-    Route::get("/penyewaan", [PenyewaanController::class, "findAll"]);
-    Route::get("/penyewaan/{id}", [PenyewaanController::class, "findById"]);
+    Route::post("/penyewaan", [PenyewaanController::class, "create"]);
+    Route::get("/penyewaan", [PenyewaanController::class, "index"]);
+    Route::get("/penyewaan/{id}", [PenyewaanController::class, "show"]);
     Route::patch("/penyewaan/{id}", [PenyewaanController::class, "update"]);
     Route::delete("/penyewaan/{id}", [PenyewaanController::class, "destroy"]);
 });

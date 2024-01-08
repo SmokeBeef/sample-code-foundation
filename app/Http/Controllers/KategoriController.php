@@ -11,15 +11,15 @@ class KategoriController extends Controller
 {
 
 
-    public function store(KategoriRequest $req)
+    public function create(KategoriRequest $req)
     {
         $kategoriService = new KategoriService();
         try {
             $payload = $req->validated();
 
-            $result = $kategoriService->store($payload);
+            $operation = $kategoriService->store($payload);
             
-            if (!$result) {
+            if (!$operation) {
                 return $this->responseError($kategoriService->getErrorMessage(), $kategoriService->getCode());
             }
 
@@ -30,7 +30,7 @@ class KategoriController extends Controller
 
     }
 
-    public function findAll()
+    public function index()
     {
         $kategoriService = new KategoriService();
         try {
@@ -41,16 +41,16 @@ class KategoriController extends Controller
             return $this->responseError("There is Error in Server");
         }
     }
-    public function findByIdFull($id)
+    public function show($id)
     {
         $kategoriService = new KategoriService();
         try {
-            $result = $kategoriService->findByIdFull($id);
+            $operation = $kategoriService->findByIdFull($id);
 
-            if (!$result) {
+            if (!$operation) {
                 return $this->responseError($kategoriService->getErrorMessage(), $kategoriService->getCode());
             }
-            return $this->responseManyData("success get all kategori", $result);
+            return $this->responseManyData("success get all kategori", $operation);
             
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
@@ -74,8 +74,8 @@ class KategoriController extends Controller
         $kategoriService = new KategoriService();
         try {
             $payload = $req->validated();
-            $result = $kategoriService->update($id, $payload);
-            if (!$result) {
+            $operation = $kategoriService->update($id, $payload);
+            if (!$operation) {
                 return $this->responseError($kategoriService->getErrorMessage(), $kategoriService->getCode());
             }
 
@@ -88,8 +88,8 @@ class KategoriController extends Controller
     {
         $kategoriService = new KategoriService();
         try {
-            $result = $kategoriService->destroy($id);
-            if (!$result) {
+            $operation = $kategoriService->destroy($id);
+            if (!$operation) {
                 return $this->responseError($kategoriService->getErrorMessage(), $kategoriService->getCode());
             }
             return $this->responseSuccess("success delete kategori", $kategoriService->getData());

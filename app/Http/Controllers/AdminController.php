@@ -11,15 +11,15 @@ use Illuminate\Http\Request;
 class AdminController extends Controller
 {
 
-    public function store(AdminRequest $req)
+    public function create(AdminRequest $req)
     {
         $adminService = new AdminService();
         try {
 
             $payload = $req->validated();
-            $result = $adminService->store($payload);
+            $operation = $adminService->store($payload);
 
-            if (!$result) {
+            if (!$operation) {
                 return $this->responseError($adminService->getErrorMessage(), $adminService->getCode());
             }
 
@@ -30,7 +30,7 @@ class AdminController extends Controller
     }
 
 
-    public function findAll()
+    public function index()
     {
         $adminService = new AdminService();
         try {
@@ -48,9 +48,9 @@ class AdminController extends Controller
         $adminService = new AdminService();
         try {
 
-            $result = $adminService->destroy($id);
+            $operation = $adminService->destroy($id);
            
-            if (!$result) {
+            if (!$operation) {
                 return $this->responseError($adminService->getErrorMessage(), $adminService->getCode());
             }
             return $this->responseSuccess("success delete Admin", $adminService->getData(), 200);

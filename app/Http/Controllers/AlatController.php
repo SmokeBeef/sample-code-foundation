@@ -10,14 +10,14 @@ use Illuminate\Http\Request;
 class AlatController extends Controller
 {
     
-    public function store(AlatRequest $req)
+    public function create(AlatRequest $req)
     {
         $alatService = new AlatService();
         try {
             $payload = $req->validated();
-            $result = $alatService->store($payload);
+            $operation = $alatService->store($payload);
             
-            if (!$result) {
+            if (!$operation) {
                 return $this->responseError($alatService->getErrorMessage(), $alatService->getCode());
             }
             return $this->responseSuccess("success add alat", $alatService->getData());
@@ -26,24 +26,24 @@ class AlatController extends Controller
         }
     }
 
-    public function findAll()
+    public function index()
     {
         $alatService = new AlatService();
         try {
 
-            $result = $alatService->findAll();
+            $operation = $alatService->findAll();
 
             return $this->responseManyData("success get all alat", $alatService->getData());
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }
     }
-    public function findById($id)
+    public function show($id)
     {
         $alatService = new AlatService();
         try {
-            $result = $alatService->findById($id);
-            if (!$result) {
+            $operation = $alatService->findById($id);
+            if (!$operation) {
                 return $this->responseError($alatService->getErrorMessage(), $alatService->getCode());
             }
             return $this->responseSuccess("success get all alat", $alatService->getData());
@@ -57,8 +57,8 @@ class AlatController extends Controller
         $alatService = new AlatService();
         try {
             $payload = $req->validated();
-            $result = $alatService->update($id, $payload);
-            if (!$result) {
+            $operation = $alatService->update($id, $payload);
+            if (!$operation) {
                 return $this->responseError($alatService->getErrorMessage(), $alatService->getCode());
             }
 
@@ -71,8 +71,8 @@ class AlatController extends Controller
     {
         $alatService = new AlatService();
         try {
-            $result = $alatService->destroy($id);
-            if (!$result) {
+            $operation = $alatService->destroy($id);
+            if (!$operation) {
                 return $this->responseError($alatService->getErrorMessage(), $alatService->getCode());
             }
             return $this->responseSuccess("success delete kategori",$alatService->getData());

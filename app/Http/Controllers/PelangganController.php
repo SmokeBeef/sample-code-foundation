@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class PelangganController extends Controller
 {
 
-    public function store(PelangganRequest $req)
+    public function create(PelangganRequest $req)
     {
         $pelangganService = new PelangganService();
         try {
@@ -21,9 +21,9 @@ class PelangganController extends Controller
             ];
             unset($payload["pelanggan_data_jenis"], $payload["pelanggan_data_photo"]);
 
-            $result = $pelangganService->store($payload, $pelangganData);
+            $operation = $pelangganService->store($payload, $pelangganData);
 
-            if (!$result) {
+            if (!$operation) {
                 return $this->responseError($pelangganService->errorMessage, $pelangganService->errorCode);
             }
             return $this->responseSuccess("success add new pelanggan", $pelangganService->data, 201);
@@ -31,22 +31,22 @@ class PelangganController extends Controller
             return $this->responseError("There is Error in Server");
         }
     }
-    public function findAll()
+    public function index()
     {
         $pelangganService = new PelangganService();
         try {
-            $result = $pelangganService->findAll();
+            $operation = $pelangganService->findAll();
             return $this->responseManyData("succes get all pelanggan", $pelangganService->getData());
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }
     }
-    public function findById($id)
+    public function show($id)
     {
         $pelangganService = new PelangganService();
         try {
-            $result = $pelangganService->findById($id);
-            if (!$result) {
+            $operation = $pelangganService->findById($id);
+            if (!$operation) {
                 return $this->responseError($pelangganService->getErrorMessage(), $pelangganService->getCode());
             }
             return $this->responseSuccess("success get pelanggan id " . $id, $pelangganService->getData(), 200);
@@ -59,8 +59,8 @@ class PelangganController extends Controller
         $pelangganService = new PelangganService();
         try {
             $payload = $req->validated();
-            $result = $pelangganService->update($id, $payload);
-            if (!$result) {
+            $operation = $pelangganService->update($id, $payload);
+            if (!$operation) {
                 return $this->responseError($pelangganService->getErrorMessage(), $pelangganService->getCode());
             }
             return $this->responseSuccess("success update pelanggan id " . $id, $pelangganService->getData(), 200);
@@ -72,8 +72,8 @@ class PelangganController extends Controller
     {
         $pelangganService = new PelangganService();
         try {
-            $result = $pelangganService->destroy($id);
-            if (!$result) {
+            $operation = $pelangganService->destroy($id);
+            if (!$operation) {
                 return $this->responseError($pelangganService->getErrorMessage(), $pelangganService->getCode());
             }
             return $this->responseSuccess("success delete pelanggan id " . $id, $pelangganService->getData(), 200);

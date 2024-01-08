@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class PenyewaanController extends Controller
 {
 
-    public function store(PenyewaanRequest $req)
+    public function create(PenyewaanRequest $req)
     {
         $penyewaanService = new PenyewaanService();
         try {
@@ -19,7 +19,7 @@ class PenyewaanController extends Controller
 
             unset($payload["detail"]);
 
-            $result = $penyewaanService->store($payload, $detail);
+            $operation = $penyewaanService->store($payload, $detail);
 
             return $this->responseSuccess("success create new penyewaan", $penyewaanService->getData(), 201);
         } catch (Exception $err) {
@@ -27,7 +27,7 @@ class PenyewaanController extends Controller
         }
     }
 
-    public function findAll(Request $req)
+    public function index(Request $req)
     {
         $penyewaanService = new PenyewaanService();
         try {
@@ -38,7 +38,7 @@ class PenyewaanController extends Controller
             if ($req->has("detail")) {
                 array_push($join, "penyewaanDetail");
             }
-            $result = $penyewaanService->findAll($join);
+            $operation = $penyewaanService->findAll($join);
             return $this->responseSuccess("success get all penyewaan", $penyewaanService->getData());
         } catch (Exception $err) {
             dd($err);
@@ -46,7 +46,7 @@ class PenyewaanController extends Controller
         }
     }
 
-    public function findById($id, Request $req)
+    public function show($id, Request $req)
     {
         $penyewaanService = new PenyewaanService();
         try {
@@ -58,9 +58,9 @@ class PenyewaanController extends Controller
                 array_push($join, "penyewaanDetail");
             }
 
-            $result = $penyewaanService->findById($id, $join);
+            $operation = $penyewaanService->findById($id, $join);
 
-            if (!$result) {
+            if (!$operation) {
                 return $this->responseError($penyewaanService->getErrorMessage(), $penyewaanService->getCode());
             }
             
@@ -76,8 +76,8 @@ class PenyewaanController extends Controller
         $penyewaanService = new PenyewaanService();
         try {
             $payload = $req->validated();
-            $result = $penyewaanService->update($id, $payload);
-            if (!$result) {
+            $operation = $penyewaanService->update($id, $payload);
+            if (!$operation) {
                 return $this->responseError($penyewaanService->getErrorMessage(), $penyewaanService->getCode());
             }
             return $this->responseSuccess("success update penyewaan id " . $id, $penyewaanService->getData(), 201);
@@ -89,8 +89,8 @@ class PenyewaanController extends Controller
     {
         $penyewaanService = new PenyewaanService();
         try {
-            $result = $penyewaanService->destroy($id);
-            if (!$result) {
+            $operation = $penyewaanService->destroy($id);
+            if (!$operation) {
                 return $this->responseError($penyewaanService->getErrorMessage(), $penyewaanService->getCode());
             }
 
