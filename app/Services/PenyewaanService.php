@@ -10,9 +10,8 @@ use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
-class PenyewaanService
+class PenyewaanService extends Service
 {
-    use ServiceTrait;
     public function store(array $data, array $detailData): bool
     {
         $result = Penyewaan::createNew($data, $detailData);
