@@ -62,7 +62,7 @@ class AlatService extends Service
     {
         $checkRelation = Penyewaan_detail::where("penyewaan_detail_alat_id", "=", $id)->count();
         if($checkRelation > 0) {
-            $this->setError("this alat has been ordered", 409);
+            $this->setError("alat that have been ordered cannot be deleted", 409);
             return false;
         }   
         $result = Alat::destroy($id);
