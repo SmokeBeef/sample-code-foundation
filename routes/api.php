@@ -38,7 +38,7 @@ Route::middleware("jwt")->group(function () {
     // kategori route
     Route::post("/kategori", [KategoriController::class, "create"]);
     Route::get("/kategori", [KategoriController::class, "index"]);
-    Route::get("/kategori/{id}/alat", [KategoriController::class, "show"]);
+    Route::get("/kategori/{id}", [KategoriController::class, "show"]);
     Route::put("/kategori/{id}", [KategoriController::class, "update"]);
     Route::delete("/kategori/{id}", [KategoriController::class, "destroy"]);
     

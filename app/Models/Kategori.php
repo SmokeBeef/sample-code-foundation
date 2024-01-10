@@ -29,25 +29,14 @@ class Kategori extends Model
 
     public static function updateIfFound($id, array $data): ?array
     {
-            $kategori = self::find($id);
-            if (!$kategori) {
-                return null;
-            }
-            $kategori->update($data);
-            return $kategori->toArray();
+        $kategori = self::find($id);
+        if (!$kategori) {
+            return null;
+        }
+        $kategori->update($data);
+        return $kategori->toArray();
 
     }
 
-    // public static function destroy($id): array
-    // {
-    //     DB::beginTransaction();
-    //     try {
-    //         DB::commit();
-
-    //         return 
-    //     } catch (Exception $err) {
-    //         DB::rollBack();
-    //         throw $err;
-    //     }
-    // }
+   
 }

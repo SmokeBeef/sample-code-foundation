@@ -17,7 +17,7 @@ class KategoriController extends Controller
         try {
             $payload = $req->validated();
 
-            $operation = $kategoriService->store($payload);
+            $operation = $kategoriService->create($payload);
             
             if (!$operation) {
                 return $this->responseError($kategoriService->getErrorMessage(), $kategoriService->getCode());
@@ -57,17 +57,6 @@ class KategoriController extends Controller
         }
     }
 
-    public function findAllAlat()
-    {
-        $kategoriService = new KategoriService();
-        try {
-            $kategoriService->findAllAlat();
-            
-            return $this->responseManyData("success get all kategori and alat", $kategoriService->getData());
-        } catch (Exception $err) {
-            return $this->responseError("There is Error in Server");
-        }
-    }
 
     public function update(KategoriRequest $req, $id)
     {

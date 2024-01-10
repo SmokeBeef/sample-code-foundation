@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Alat;
 use App\Models\Kategori;
 use Exception;
 use Illuminate\Support\Facades\Redis;
@@ -10,24 +11,19 @@ class KategoriService
 {
     use ServiceTrait;
     protected $redisKey = "kategori";
-    protected $redisKeyFull = "kategoriJoinAlat";
 
-    public function store(array $data)
+    public function create(array $data)
     {
-
-
-
         $result = Kategori::create($data);
 
         if (!$result) {
-            $this->setError($result->getMessage(), $result->getCode());
+            $this->setError("kategori_nama already use", "409");
             return false;
         }
 
         Redis::del($this->redisKey);
-        Redis::del($this->redisKeyFull);
 
-        $this->setData($result);
+        $this->setData($result->toArray());
         return $result;
 
     }
@@ -36,11 +32,12 @@ class KategoriService
     {
 
         $result = null;
-        if (Redis::exists($this->redisKey)) {
-            $result = json_decode(Redis::get($this->redisKey));
+        $fromRedis = self::getFromRedis($this->redisKey);
+        if ($fromRedis) {
+            $result = $fromRedis;
         } else {
             $result = kategori::all();
-            Redis::set($this->redisKey, $result);
+            Redis::set($this->redisKey, json_encode($result));
             $result = $result->toArray();
         }
 
@@ -62,22 +59,6 @@ class KategoriService
 
     }
 
-    public function findAllAlat()
-    {
-
-        $result = null;
-        if (Redis::exists($this->redisKeyFull)) {
-            $result = json_decode(Redis::get($this->redisKeyFull));
-        } else {
-            $result = Kategori::with("alat")->get();
-            Redis::set($this->redisKeyFull, $result);
-            $result = $result->toArray();
-        }
-
-        $this->setData($result);
-        return $result;
-
-    }
 
     public function update($id, array $data)
     {
@@ -88,7 +69,6 @@ class KategoriService
             return false;
         }
         Redis::del($this->redisKey);
-        Redis::del($this->redisKeyFull);
 
         $this->setData($result);
         return true;
@@ -96,6 +76,12 @@ class KategoriService
     }
     public function destroy(int|string $id)
     {
+        $checkHasRelation = Alat::where("alat_kategori_id", "=", $id)->count();
+        if($checkHasRelation > 0){
+            $this->setError("this kategori has relation to alat", 409);
+            return false;
+        }
+
         $result = Kategori::destroy($id);
         
         if (!$result) {
@@ -103,9 +89,19 @@ class KategoriService
             return false;
         }
         Redis::del($this->redisKey);
-        Redis::del($this->redisKeyFull);
 
         $this->setData(["id" => $id]);
         return true;
+    }
+
+    ////////////////////
+    // local function
+    //
+    private static function getFromRedis(string $key): ?array
+    {
+        if(Redis::exists($key)){
+            return json_decode(Redis::get($key));
+        }
+        return null;
     }
 }
