@@ -26,15 +26,26 @@ class AlatController extends Controller
         }
     }
 
-    public function index()
+    public function index(Request $req)
     {
         $alatService = new AlatService();
         try {
 
-            $operation = $alatService->findAll();
+            $page = $req->query("page", "1");
+            $perPage = $req->query("perpage", $this->defaultTake);
+            $search = $req->query("search");
 
-            return $this->responseManyData("success get all alat", $alatService->getData());
+            $operation = $alatService->findAll($page, $perPage, $search);
+
+            if (!$operation) {
+                return $this->responseError($alatService->getErrorMessage(), $alatService->getCode());
+            }
+
+            $meta = $alatService->getMetaPagination();
+
+            return $this->responseManyData("success get all alat", $alatService->getData(), $meta);
         } catch (Exception $err) {
+            dd($err);
             return $this->responseError("There is Error in Server");
         }
     }
@@ -62,7 +73,7 @@ class AlatController extends Controller
                 return $this->responseError($alatService->getErrorMessage(), $alatService->getCode());
             }
 
-            return $this->responseSuccess("success update new kategori", $alatService->getData(), 201);
+            return $this->responseSuccess("success update alat", $alatService->getData(), 201);
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }

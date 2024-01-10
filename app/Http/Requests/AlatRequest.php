@@ -26,7 +26,7 @@ class AlatRequest extends FormRequest
     {
         return [
             "alat_kategori_id" => "required|numeric|exists:kategoris,kategori_id",
-            "alat_nama" => "required|string|max:255",
+            "alat_nama" => "required|string|max:255|unique:alats",
             "alat_deskripsi" => "required|string|max:255",
             "alat_hargaperhari" => "required|numeric",
             "alat_stok" => "required|numeric",

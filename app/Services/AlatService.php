@@ -2,97 +2,80 @@
 namespace App\Services;
 
 use App\Models\Alat;
-use Exception;
+use App\Models\Penyewaan_detail;
 
-class AlatService
+class AlatService extends Service
 {
-    use ServiceTrait;
-
     public function store(array $data): bool
     {
-        try {
-            $result = Alat::createOrException($data);
+        $result = Alat::create($data);
 
-            if ($result instanceof Exception) {
-                $this->setError($result->getMessage(), $result->getCode());
-                return false;
-            }
-
-            $this->setData($result);
-            return true;
-        } catch (Exception $err) {
-            throw $err;
+        if (!$result) {
+            $this->setError("conflict", 409);
+            return false;
         }
+
+        $this->setData($result->toArray());
+        return true;
+
     }
 
-    public function findAll(): bool
+    public function findAll($page, $perPage, ?string $search): bool
     {
-        try {
-            $result = Alat::all();
-            $this->setData($result->toArray());
-            return true;
-        } catch (Exception $err) {
-            throw $err;
-        }
+        $paginate = $this->calcTakeSkip($page, $perPage);
+
+        $result = Alat::paginateFilter($paginate["take"], $paginate["skip"], $search);
+        $totalData = Alat::countFilter($search);
+
+        $this->setData($result);
+        $this->setTotalData($totalData);
+        return true;
     }
 
     public function findById($id): bool
     {
-        try {
-            $result = Alat::find($id);
-            if (!$result) {
-                $this->setError("alat id $id not found", 404);
-                return false;
-            }
-            $this->setData($result->toArray());
-            return true;
-        } catch (Exception $err) {
-            throw $err;
+
+        $result = Alat::find($id);
+        if (!$result) {
+            $this->setError("alat id $id not found", 404);
+            return false;
         }
+        $this->setData($result->toArray());
+        return true;
     }
 
     public function update($id, $data): bool
     {
-        try {
-            $result = Alat::updateOrException($id, $data);
-            if ($result instanceof Exception) {
-                $this->setError($result->getMessage(), $result->getCode());
-                return false;
-            }
 
-            $this->setData($result);
-            return true;
-        } catch (Exception $err) {
-            throw $err;
+        $result = Alat::updateIfFound($id, $data);
+        if (!$result) {
+            $this->setError("alat id $id not found", 404);
+            return false;
         }
+
+        $this->setData($result);
+        return true;
+
     }
 
     public function destroy($id)
     {
-        try {
-            $result = Alat::deleteOrException($id);
-            if ($result instanceof Exception) {
-                $this->setError($result->getMessage(), $result->getCode());
-                return false;
-            }
-
-            $this->setData($result);
-            return true;
-        } catch (Exception $err) {
-            throw $err;
+        $checkRelation = Penyewaan_detail::where("penyewaan_detail_alat_id", "=", $id)->count();
+        if($checkRelation > 0) {
+            $this->setError("this alat has been ordered", 409);
+            return false;
+        }   
+        $result = Alat::destroy($id);
+        if (!$result) {
+            $this->setError("alat id $id not found", 404);
+            return false;
         }
+
+        $this->setData(["alat_id" => $id]);
+        return true;
 
     }
 
 
 
-    protected function findByNama($nama): bool
-    {
-        try {
-            $result = Alat::where("alat_nama", $nama)->first();
-            return !!$result;
-        } catch (Exception $err) {
-            throw $err;
-        }
-    }
 }
