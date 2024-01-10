@@ -26,58 +26,28 @@ class Kategori extends Model
         return $this->hasMany(Alat::class, "alat_kategori_id", "kategori_id");
     }
 
-    public static function createOrException(array $data): Exception|array
-    {
-        try {
-            $isNameTaken = self::where("kategori_nama", $data["kategori_nama"])->first();
-            if ($isNameTaken) {
-                return new Exception("kategori nama already used", 409);
-            }
-            $result = self::create($data)->toArray();
-            return $result;
-        } catch (Exception $err) {
-            throw $err;
-        }
-    }
 
-    public static function updateOrException($id, array $data): Exception|array
+    public static function updateIfFound($id, array $data): ?array
     {
-        try {
-            $isNameTaken = self
-                ::where("kategori_nama", $data["kategori_nama"])
-                ->where("kategori_id", "<>", $id)
-                ->first();
-            if ($isNameTaken) {
-                return new Exception("kategori nama already used", 409);
-            }
             $kategori = self::find($id);
             if (!$kategori) {
-                return new Exception("Kategori id $id not found", 404);
+                return null;
             }
             $kategori->update($data);
             return $kategori->toArray();
-        } catch (Exception $err) {
-            throw $err;
-        }
+
     }
 
-    public static function deleteOrException($id): Exception|array
-    {
-        DB::beginTransaction();
-        try {
-            $kategori = self::find($id);
-            if (!$kategori) {
-                DB::rollBack();
-                return new Exception("kategori id $id not found", 404);
-            }
-            $kategori->alat()->delete();
-            $kategori->delete();
-            DB::commit();
+    // public static function destroy($id): array
+    // {
+    //     DB::beginTransaction();
+    //     try {
+    //         DB::commit();
 
-            return $kategori->toArray();
-        } catch (Exception $err) {
-            DB::rollBack();
-            throw $err;
-        }
-    }
+    //         return 
+    //     } catch (Exception $err) {
+    //         DB::rollBack();
+    //         throw $err;
+    //     }
+    // }
 }

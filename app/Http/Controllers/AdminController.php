@@ -25,19 +25,31 @@ class AdminController extends Controller
 
             return $this->responseSuccess("success create new Admin", $adminService->data, 201);
         } catch (Exception $th) {
+            dd($th);
             return $this->responseError("There is Error in Server");
         }
     }
 
 
-    public function index()
+    public function index(Request $req)
     {
         $adminService = new AdminService();
         try {
 
-            $adminService->findAll();
+            $page = $req->query("page", "1");
+            $perPage = $req->query("perpage", $this->defaultTake);
+            $search = $req->query("search");
 
-            return $this->responseSuccess("success get All Admin", $adminService->data, 200);
+            $adminService->findAll($page, $perPage, $search);
+
+            // $meta = $this->metaPagination(
+            //     $adminService->getTotalData(),
+            //     $adminService->getPerPage(),
+            //     $adminService->getPageNow()
+            // );
+            $meta = $adminService->getMetaPagination();
+
+            return $this->responseManyData("success get All Admin", $adminService->getData(), $meta);
         } catch (Exception $th) {
             return $this->responseError("There is Error in Server");
         }
@@ -49,7 +61,7 @@ class AdminController extends Controller
         try {
 
             $operation = $adminService->destroy($id);
-           
+
             if (!$operation) {
                 return $this->responseError($adminService->getErrorMessage(), $adminService->getCode());
             }

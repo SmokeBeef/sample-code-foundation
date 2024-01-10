@@ -114,6 +114,7 @@ class Penyewaan extends Model
             $result->delete();
             DB::commit();
             return $result->toArray();
+        
         } catch (Exception $err) {
             DB::rollBack();
             throw $err;

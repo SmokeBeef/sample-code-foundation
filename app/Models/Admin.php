@@ -47,32 +47,38 @@ class Admin extends User implements JWTSubject
         return $this->admin_password;
     }
 
-    public static function deleteOrNull($id): null|array
+    public static function paginateFilter(int $take, int $skip, ?string $search = null): array
     {
-        try {
-            $admin = self::find($id);
-            if (!$admin) {
-                return null;
-            }
-            $admin->delete();
-            return $admin->toArray();
-        } catch (Exception $err) {
-            throw $err;
+        $result = self::query();
+        if (!!$search) {
+            $result->where("admin_username", "like", "%$search%");
         }
+        $result->skip($skip)->take($take);
+        $result = $result->get();
+        
+        return $result->toArray();
     }
 
-    public static function createOrNull($data): null|array
+    public static function countFilter(?string $search): int
     {
-        try {
-            $isUsernameTaken = self::where("admin_username", $data["admin_username"])->first();
-            if ($isUsernameTaken) {
-                return null;
-            }
-            $result = self::create($data);
-            return $result->toArray();
-        } catch (Exception $err) {
-            throw $err;
+        $result = self::query();
+        if (!!$search) {
+            $result->where("admin_username", "like", "%$search%");
         }
+        $result = $result->count();
+        return $result;
     }
+
+
+    public static function store($data): null|array
+    {
+        $isUsernameTaken = self::where("admin_username", $data["admin_username"])->first();
+        if ($isUsernameTaken) {
+            return null;
+        }
+        $result = self::create($data);
+        return $result->toArray();
+    }
+
 
 }

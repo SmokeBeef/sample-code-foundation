@@ -23,9 +23,11 @@ class KategoriRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            "kategori_nama" => ["required", "string", "max:50"],
+        $rule = [
+            "kategori_nama" => ["required", "string", "max:50", "unique:kategoris,kategori_nama"],
         ];
+
+        return $rule;
     }
 
     protected function failedValidation(Validator $validator)

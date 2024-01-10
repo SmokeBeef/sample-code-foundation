@@ -5,62 +5,53 @@ use App\Models\Admin;
 use Exception;
 use Illuminate\Support\Facades\Redis;
 
-class AdminService
+class AdminService extends Service
 {
-    use ServiceTrait;
     protected $redisKey = "admin";
 
     public function store(array $data): bool
     {
-        try {
+        $result = Admin::create($data);
 
-            $result = Admin::createOrNull($data);
-
-            if (!$result) {
-                $this->setError("username already taken", 409);
-                return false;
-            }
-
-            Redis::del($this->redisKey);
-
-            $this->setData($result);
-            return true;
-        } catch (Exception $err) {
-            throw $err;
+        if (!$result) {
+            $this->setError("username already taken", 409);
+            return false;
         }
+
+
+        Redis::del($this->redisKey);
+        $this->setData($result);
+        return true;
+
     }
 
-    public function findAll(): bool
+    public function findAll($page, $perPage, ?string $search): bool
     {
-        try {
-            $result = null;
-            if (Redis::exists($this->redisKey)) {
-                $result = Redis::get($this->redisKey);
-            } else {
-                $result = Admin::all()->toArray();
-                Redis::set($this->redisKey, $result);
-            }
+        $paginate = $this->calcTakeSkip($page, $perPage);
+  
+        $result = Admin::paginateFilter($paginate["take"], $paginate["skip"], $search);
+        $totalAdmin = Admin::countFilter($search);
 
-            $this->setData($result);
-            return true;
-        } catch (Exception $err) {
-            throw $err;
-        }
+        $this->setTotalData($totalAdmin);
+        $this->setData($result);
+
+        return true;
+
     }
 
     public function destroy($id): bool
     {
-        try {
-            $result = Admin::deleteOrNull($id);
+        $result = Admin::destroy($id);
 
-            if (!$result) {
-                $this->setError("id $id not found", 404);
-                return false;
-            }
-            $this->setData($result);
-            return true;
-        } catch (Exception $err) {
-            throw $err;
+        if (!$result) {
+            $this->setError("id $id not found", 404);
+            return false;
         }
+
+        Redis::del($this->redisKey);
+
+        $this->setData(["id" => $id]);
+        return true;
+
     }
 }

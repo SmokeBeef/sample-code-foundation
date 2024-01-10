@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 
 class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
 
+    protected $defaultTake = 25;
+    
 
     protected function responseManyData(string $message, mixed $data, array $meta = null, int $code = 200): JsonResponse
     {
@@ -54,10 +57,10 @@ class Controller extends BaseController
     protected function metaPagination(int $totalData, int $perPage, int $currentPage): array
     {
         return [
-            "totalData" => $totalData,
-            "perPage" => $perPage,
-            "currentPage" => $currentPage,
-            "totalPage" => ceil($totalData / $perPage),
+            "total_data" => $totalData,
+            "per_page" => $perPage,
+            "current_page" => $currentPage,
+            "total_page" => ceil($totalData / $perPage),
         ];
     }
 }

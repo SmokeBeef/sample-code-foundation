@@ -23,10 +23,17 @@ class AdminRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            "admin_username" => ["required", "max:50"],
+        $rule = [
+            "admin_username" => ["required", "max:50", "unique:admins,admin_username"],
             "admin_password" => ["required", "max:255"],
         ];
+        if (str_contains($this->url(), "login")) {
+            $rule = [
+                "admin_username" => ["required", "max:50"],
+                "admin_password" => ["required", "max:255"],
+            ];
+        }
+        return $rule;
     }
 
     protected function failedValidation(Validator $validator)

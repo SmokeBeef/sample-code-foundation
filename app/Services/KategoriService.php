@@ -15,111 +15,97 @@ class KategoriService
     public function store(array $data)
     {
 
-        try {
 
-            $result = Kategori::createOrException($data);
 
-            if ($result instanceof Exception) {
-                $this->setError($result->getMessage(), $result->getCode());
-                return false;
-            }
+        $result = Kategori::create($data);
 
-            Redis::del($this->redisKey);
-            Redis::del($this->redisKeyFull);
-
-            $this->setData($result);
-            return $result;
-        } catch (Exception $err) {
-            throw $err;
+        if (!$result) {
+            $this->setError($result->getMessage(), $result->getCode());
+            return false;
         }
+
+        Redis::del($this->redisKey);
+        Redis::del($this->redisKeyFull);
+
+        $this->setData($result);
+        return $result;
+
     }
 
     public function findAll()
     {
-        try {
-            $result = null;
-            if (Redis::exists($this->redisKey)) {
-                $result = json_decode(Redis::get($this->redisKey));
-            } else {
-                $result = kategori::all();
-                Redis::set($this->redisKey, $result);
-                $result = $result->toArray();
-            }
 
-            $this->setData($result);
-            return $result;
-        } catch (Exception $err) {
-            throw $err;
+        $result = null;
+        if (Redis::exists($this->redisKey)) {
+            $result = json_decode(Redis::get($this->redisKey));
+        } else {
+            $result = kategori::all();
+            Redis::set($this->redisKey, $result);
+            $result = $result->toArray();
         }
+
+        $this->setData($result);
+        return $result;
+
     }
     public function findByIdFull($id)
     {
-        try {
-            $result = Kategori::with("alat")->find($id);
-            if (!$result) {
-                $this->setError("kategori id $id not found", 404);
-                return false;
-            }
 
-            $this->setData($result->toArray());
-            return $result;
-        } catch (Exception $err) {
-            throw $err;
+        $result = Kategori::with("alat")->find($id);
+        if (!$result) {
+            $this->setError("kategori id $id not found", 404);
+            return false;
         }
+
+        $this->setData($result->toArray());
+        return $result;
+
     }
 
     public function findAllAlat()
     {
-        try {
-            $result = null;
-            if (Redis::exists($this->redisKeyFull)) {
-                $result = json_decode(Redis::get($this->redisKeyFull));
-            } else {
-                $result = Kategori::with("alat")->get();
-                Redis::set($this->redisKeyFull, $result);
-                $result = $result->toArray();
-            }
 
-            $this->setData($result);
-            return $result;
-        } catch (Exception $err) {
-            throw $err;
+        $result = null;
+        if (Redis::exists($this->redisKeyFull)) {
+            $result = json_decode(Redis::get($this->redisKeyFull));
+        } else {
+            $result = Kategori::with("alat")->get();
+            Redis::set($this->redisKeyFull, $result);
+            $result = $result->toArray();
         }
+
+        $this->setData($result);
+        return $result;
+
     }
 
-    public function update(int|string $id, array $data)
+    public function update($id, array $data)
     {
-        try {
-            $result = Kategori::updateOrException($id, $data);
-            if ($result instanceof Exception) {
-                $this->setError($result->getMessage(), $result->getCode());
-                return false;
-            }
-            Redis::del($this->redisKey);
-            Redis::del($this->redisKeyFull);
 
-            $this->setData($result);
-            return true;
-        } catch (Exception $err) {
-            throw $err;
+        $result = Kategori::updateIfFound($id, $data);
+        if (!$result) {
+            $this->setError("id $id not found", 404);
+            return false;
         }
+        Redis::del($this->redisKey);
+        Redis::del($this->redisKeyFull);
+
+        $this->setData($result);
+        return true;
+
     }
     public function destroy(int|string $id)
     {
-        try {
-            $result = Kategori::deleteOrException($id);
-            // dd($kategori);
-            if ($result instanceof Exception) {
-                $this->setError($result->getMessage(), $result->getCode());
-                return false;
-            }
-            Redis::del($this->redisKey);
-            Redis::del($this->redisKeyFull);
-
-            $this->setData($result);
-            return true;
-        } catch (Exception $err) {
-            throw $err;
+        $result = Kategori::destroy($id);
+        
+        if (!$result) {
+            $this->setError("id $id not found", 404);
+            return false;
         }
+        Redis::del($this->redisKey);
+        Redis::del($this->redisKeyFull);
+
+        $this->setData(["id" => $id]);
+        return true;
     }
 }
