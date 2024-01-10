@@ -37,87 +37,71 @@ class Penyewaan extends Model
     }
 
 
-    public static function createOrException(array $data, array $dataDetail): Exception|array
+    public static function createNew(array $data, array $dataDetail): array
     {
         DB::beginTransaction();
-        try {
-            $result = self::create($data);
-            $result->penyewaanDetail()->createMany($dataDetail);
-            DB::commit();
-            return $result->toArray();
-        } catch (Exception $err) {
-            DB::rollBack();
-            throw $err;
-        }
+        $result = self::create($data);
+        $result->penyewaanDetail()->createMany($dataDetail);
+        DB::commit();
+        return $result->toArray();
+
     }
 
     public static function findAllJoin(string ...$relations): array
     {
-        try {
 
-            $query = Penyewaan::query();
-            foreach ($relations as $relation) {
-                $query->with($relation);
-            }
-            $result = $query->get()->toArray();
 
-            return $result;
-        } catch (Exception $err) {
-            throw $err;
+        $query = Penyewaan::query();
+        foreach ($relations as $relation) {
+            $query->with($relation);
         }
+        $result = $query->get()->toArray();
+
+        return $result;
+
     }
-    public static function findByIdJoin($id, string ...$relations): array
+    public static function findByIdJoin($id, string ...$relations): ?array
     {
-        try {
 
-            $query = Penyewaan::query();
-            foreach ($relations as $relation) {
-                $query->with($relation);
-            }
-            $result = $query->find($id);
-            if (!$result) {
-                return [];
-            }
-            $result = $query->get()->toArray();
-            return $result;
-        } catch (Exception $err) {
-            throw $err;
+
+        $query = Penyewaan::query();
+        foreach ($relations as $relation) {
+            $query->with($relation);
         }
+        $result = $query->find($id);
+        if (!$result) {
+            return null;
+        }
+        return $result->toArray();
+
     }
 
-    public static function updateOrException($id, array $data): Exception|array
+    public static function updateIfExist($id, array $data): ?array
     {
-        try {
-            $result = self::find($id);
-            if (!$result) {
-                return new Exception("id $id Not Found", 404);
-            }
-
-            $result->update($data);
-
-            return $result->toArray();
-        } catch (Exception $err) {
-            throw $err;
+        $result = self::find($id);
+        if (!$result) {
+            return null;
         }
-    }
-    public static function deleteOrException($id): Exception|array
-    {
-        DB::beginTransaction();
-        try {
-            $result = self::find($id);
-            if (!$result) {
-                DB::rollBack();
-                return new Exception("id $id Not Found", 404);
-            }
 
+        $result->update($data);
+
+        return $result->toArray();
+    }
+    public static function deleteIfExist($id): ?array
+    {
+        $result = self::find($id);
+        if (!$result) {
+            return null;
+        }
+        try {
+            DB::beginTransaction();
             $result->penyewaanDetail()->delete();
             $result->delete();
             DB::commit();
-            return $result->toArray();
-        
-        } catch (Exception $err) {
+        } catch (\Throwable $th) {
             DB::rollBack();
-            throw $err;
         }
+        return $result->toArray();
+
     }
 }

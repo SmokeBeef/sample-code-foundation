@@ -15,79 +15,80 @@ class PenyewaanService
     use ServiceTrait;
     public function store(array $data, array $detailData): bool
     {
-        try {
-            $result = Penyewaan::createOrException($data, $detailData);
+        $result = Penyewaan::createNew($data, $detailData);
 
-            // send Notification
-            self::sendEmail($data["penyewaan_pelanggan_id"], $data["penyewaan_tglkembali"]);
+        // send Notification
+        self::sendEmail($data["penyewaan_pelanggan_id"], $data["penyewaan_tglkembali"]);
 
-            $this->setData($result);
+        $this->setData($result);
 
-            return true;
-        } catch (Exception $err) {
-            throw $err;
-        }
+        return true;
+
     }
     public function findAll(array $join = []): bool
     {
-        try {
-            $result = Penyewaan::findAllJoin(...$join);
-            $this->setData($result);
-            return true;
-        } catch (Exception $err) {
-            throw $err;
-        }
+        $result = Penyewaan::findAllJoin(...$join);
+        $this->setData($result);
+        return true;
     }
 
     public function findById($id, array $join = [])
     {
-        try {
-            $result = Penyewaan::findByIdJoin($id, ...$join);
-            if (!$result) {
-                $this->setError("penyewaan_id $id not found", 404);
-                return false;
-            }
-            $this->setData($result);
-            return $result;
-        } catch (Exception $err) {
-            throw $err;
+        $result = Penyewaan::findByIdJoin($id, ...$join);
+        if (!$result) {
+            $this->setError("penyewaan_id $id not found", 404);
+            return false;
         }
+        $this->setData($result);
+        return true;
+
+    }
+
+    public function findFull($id): bool
+    {
+        $result = Penyewaan::with("pelanggan")->with("penyewaanDetail")->with("penyewaanDetail.alat")->find($id);
+        if (!$result) {
+            $this->setError("penyewaan_id $id not found", 404);
+            return false;
+        }
+
+        $this->setData($result->toArray());
+        return true;
     }
     public function update($id, array $data)
     {
-        try {
-            $result = Penyewaan::updateOrException($id, $data);
-            if ($result instanceof Exception) {
-                $this->setError($result->getMessage(), $result->getCode());
-                return false;
-            }
 
-            $this->setData($result);
-            return $result;
-        } catch (Exception $err) {
-            throw $err;
+        $result = Penyewaan::updateIfExist($id, $data);
+        if (!$result) {
+            $this->setError("penyewaan id $id not found", 404);
+            return false;
         }
+
+        $this->setData($result);
+        return $result;
+
     }
 
     public function destroy($id)
     {
-        try {
-            $result = Penyewaan::deleteOrException($id);
-            if ($result instanceof Exception) {
-                $this->setError($result->getMessage(), $result->getCode());
-                return false;
-            }
 
-            $this->setData($result);
-            return $result;
-        } catch (Exception $err) {
-            throw $err;
+        $result = Penyewaan::deleteIfExist($id);
+        if (!$result) {
+            $this->setError("penyewaan id $id not found", 404);
+            return false;
         }
+
+        $this->setData($result);
+        return $result;
+
     }
 
-    private static function sendEmail($id, $tglKembali)
+    /////////////////////
+    // private function 
+    //
+    private static function sendEmail($idPelanggan, $tglKembali)
     {
-        $email = Pelanggan::find($id)->email;
+        $email = Pelanggan::find($idPelanggan)->email;
         $notifyDate = new Carbon($tglKembali);
         $notifyDate->modify("-1 day");
         $diffTime = $notifyDate->diffInSeconds(Carbon::now());

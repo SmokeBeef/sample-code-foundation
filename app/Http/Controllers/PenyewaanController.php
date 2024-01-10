@@ -70,6 +70,23 @@ class PenyewaanController extends Controller
             return $this->responseError("there is error in internal server");
         }
     }
+    public function showFull($id)
+    {
+        $penyewaanService = new PenyewaanService();
+        try {
+
+            $operation = $penyewaanService->findFull($id);
+
+            if (!$operation) {
+                return $this->responseError($penyewaanService->getErrorMessage(), $penyewaanService->getCode());
+            }
+            
+            return $this->responseSuccess("success get penyewaan id " . $id, $penyewaanService->getData());
+        } catch (Exception $err) {
+
+            return $this->responseError("there is error in internal server");
+        }
+    }
 
     public function update(PenyewaanRequest $req, $id)
     {
