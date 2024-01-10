@@ -25,8 +25,8 @@ class PelangganRequest extends FormRequest
         $rule = [
             "pelanggan_nama" => "required|string|max:150",
             "pelanggan_alamat" => "required|string|max:200",
-            "pelanggan_notelp" => "required|string|max:13",
-            "pelanggan_email" => "required|string|email|max:100",
+            "pelanggan_notelp" => "required|string|max:13|unique:pelanggans",
+            "pelanggan_email" => "required|string|email|max:100|unique:pelanggans",
             "pelanggan_data_jenis"=> "required|in:KTP,SIM",
             "pelanggan_data_photo" => "required|file|mimes:jpg,png,jpeg|max:2048" 
         ];

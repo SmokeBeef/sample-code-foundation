@@ -2,104 +2,108 @@
 namespace App\Services;
 
 use App\Models\Pelanggan;
+use App\Models\Penyewaan;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-class PelangganService
+class PelangganService extends Service
 {
-    use ServiceTrait;
 
-    protected $pathImg = "foto-pelanggan/";
 
     public function store(array $data, array $pelangganData): bool
     {
-        try {
-            // get file and set filename
-            $file = $pelangganData["pelanggan_data_file"];
-            $filename = self::getFileName($file);
+        // get file and set filename
+        $file = $pelangganData["pelanggan_data_file"];
+        $filename = self::getFileName($file);
 
-            // set path to save image 
-            $path = "foto-pelanggan/" . $filename;
+        // set path to save image 
+        $path = "foto-pelanggan/" . $filename;
 
-            // set path to save in database
-            $pelangganData["pelanggan_data_file"] = "storage/" . $path;
+        // set path to save in database
+        $pelangganData["pelanggan_data_file"] = "storage/" . $path;
 
-            $result = Pelanggan::createOrException($data, $pelangganData);
-            if ($result instanceof Exception) {
-                $this->setError($result->getMessage(), $result->getCode());
-                return false;
-            }
-
-            // save image
-            $saveImage = self::saveImage($path, $file);
-            if (!$saveImage) {
-                $this->setError("fail to save image", 500);
-                return false;
-            }
-
-            $this->setData($result);
-            return true;
-        } catch (Exception $err) {
-            throw $err;
+        $result = Pelanggan::createNew($data, $pelangganData);
+        if (!$result) {
+            $this->setError("Conflict when Create new pelanggan", 409);
+            return false;
         }
+
+        // save image
+        $saveImage = self::saveImage($path, $file);
+        if (!$saveImage) {
+            $this->setError("fail to save image", 500);
+            return false;
+        }
+
+        $this->setData($result);
+        return true;
+
     }
-    public function findAll(): bool
+    public function findAll($page, $perPage, ?string $search): bool
     {
-        try {
-            $result = Pelanggan::all()->toArray();
-            $this->setData($result);
-            return true;
-        } catch (Exception $err) {
-            throw $err;
-        }
+        $paginate = $this->calcTakeSkip($page, $perPage);
+
+        $result = Pelanggan::paginateFilter($paginate["take"], $paginate["skip"], $search);
+        $totalData = Pelanggan::countFilter($search);
+
+        $this->setTotalData($totalData);
+        $this->setData($result);
+        return true;
+
     }
 
     public function findById($id): bool
     {
-        try {
-            $result = Pelanggan::with("pelangganData")->find($id);
-            if (!$result) {
-                $this->setError("pelanggan id $id not found", 404);
-                return false;
-            }
-            $result->pelangganData->pelanggan_data_file = env("APP_URL", "http://localhost:8000") . "/" . $result->pelangganData->pelanggan_data_file;
-            $this->setData($result->toArray());
-            return true;
-        } catch (Exception $err) {
-            throw $err;
+        $result = Pelanggan::with("pelangganData")->find($id);
+        if (!$result) {
+            $this->setError("pelanggan id $id not found", 404);
+            return false;
         }
+        $result->pelangganData->pelanggan_data_file = self::setUrlImg($result->pelangganData->pelanggan_data_file);
+        $this->setData($result->toArray());
+        return true;
+
     }
     public function update($id, array $data): bool
     {
-        try {
-            $result = Pelanggan::updateOrException($id, $data);
-            if ($result instanceof Exception) {
-                $this->setError($result->getMessage(), $result->getCode());
-                return false;
-            }
-            $this->setData($result);
-            return true;
-        } catch (Exception $err) {
-            throw $err;
+        $result = Pelanggan::updateIfExist($id, $data);
+        if (!$result) {
+            $this->setError("pelanggan id $id not found", 404);
+            return false;
         }
+        $this->setData($result);
+        return true;
+
     }
     public function destroy($id): bool
     {
         try {
-            $result = Pelanggan::deleteOrException($id);
-            if ($result instanceof Exception) {
-                $this->setError($result->getMessage(), $result->getCode());
+
+            $checkRelation = Penyewaan::where("penyewaan_pelanggan_id", "=", $id)->count();
+            if($checkRelation > 0){
+                $this->setError("pelanggan that have been ordered cannot be deleted", 409);
                 return false;
             }
+
+            $result = Pelanggan::deleteIfExist($id);
+
+            if (!$result) {
+                $this->setError("pelanggan id $id not found", 404);
+                return false;
+            }
+
+
+            // deleting file
             $filePath = $result["pelanggan_data"]["pelanggan_data_file"];
-            // make storage/ disappear from pelanggan_data_file
+            // make "storage/" disappear from pelanggan_data_file
             $path = self::pathDelete($filePath);
-            
+
             if (Storage::disk("public")->exists($path)) {
                 Storage::disk("public")->delete($path);
             }
+            
             $this->setData($result);
             return true;
         } catch (Exception $err) {
@@ -110,6 +114,12 @@ class PelangganService
     ////////////////////////
     // private funtction
     //
+
+    private static function setUrlImg($path): string
+    {
+        return env("APP_URL", "http://localhost:8000") . "/" . $path;
+    }
+
     private static function saveImage($path, $file): bool
     {
         try {

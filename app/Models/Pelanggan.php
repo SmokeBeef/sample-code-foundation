@@ -33,63 +33,72 @@ class Pelanggan extends Model
         return $this->hasMany(Penyewaan::class, "penyewaan_pelanggan_id", "pelanggan_id");
     }
 
-    public static function createOrException($pelanggan, $pelangganData): Exception|array
+    public static function createNew($pelanggan, $pelangganData): array
     {
         DB::beginTransaction();
-        try {
-            $isEmailTaken = self::where("pelanggan_email", $pelanggan["pelanggan_email"])->first();
-            if ($isEmailTaken) {
-                DB::rollBack();
-                return new Exception("email already use", 409);
-            }
-            $result = self::create($pelanggan);
-            $result->pelangganData()->create($pelangganData);
-            DB::commit();
-            return $result->toArray();
-        } catch (Exception $err) {
-            DB::rollBack();
-            throw $err;
-        }
+        $result = self::create($pelanggan);
+        $result->pelangganData()->create($pelangganData);
+        DB::commit();
+        return $result->toArray();
+
     }
 
-    public static function deleteOrException($id): Exception|array
+    public static function paginateFilter(int $take, int $skip, ?string $search = null): array
     {
-        DB::beginTransaction();
+        $query = self::query();
+        if (!!$search) {
+            $query->where("pelanggan_nama", "like", "%$search%")
+                ->orWhere("pelanggan_alamat", "like", "%$search%")
+                ->orWhere("pelanggan_notelp", "like", "%$search%")
+                ->orWhere("pelanggan_emal", "like", "%$search%");
+        }
+        $query->skip($skip)->take($take);
+        $result = $query->get();
+
+        return $result->toArray();
+    }
+
+    public static function countFilter(?string $search): int
+    {
+        $query = self::query();
+        if (!!$search) {
+            $query->where("pelanggan_nama", "like", "%$search%")
+                ->orWhere("pelanggan_alamat", "like", "%$search%")
+                ->orWhere("pelanggan_notelp", "like", "%$search%")
+                ->orWhere("pelanggan_emal", "like", "%$search%");
+        }
+        $result = $query->count();
+        return $result;
+    }
+
+    public static function deleteIfExist($id): ?array
+    {
+        $pelanggan = self::with("pelangganData")->find($id);
+        
+        if (!$pelanggan) {
+            return null;
+        }
         try {
-            $pelanggan = self::with("pelangganData")->find($id);
-            if (!$pelanggan) {
-                DB::rollBack();
-                return new Exception("id $id not found", 404);
-            }
+            DB::beginTransaction();
             $pelanggan->pelangganData()->delete();
             $pelanggan->delete();
             DB::commit();
-            return $pelanggan->toArray();
-        } catch (Exception $err) {
+        } catch (\Throwable $th) {
+            dd($th);
             DB::rollBack();
-            throw $err;
         }
+
+        return $pelanggan->toArray();
     }
 
-    public static function updateOrException($id, $data): Exception|array
+    public static function updateIfExist($id, $data): ?array
     {
-        try {
-            $isEmailTaken = self
-                ::where("pelanggan_email", $data["pelanggan_email"])
-                ->where("pelanggan_id", "<>", $id)
-                ->first();
-
-            if ($isEmailTaken) {
-                return new Exception("email already used", 409);
-            }
-            $pelanggan = self::find($id);
-            if (!$pelanggan) {
-                return new Exception("pelanggan_id $id not found", 404);
-            }
-            $pelanggan->update($data);
-            return $pelanggan->toArray();
-        } catch (Exception $err) {
-            throw $err;
+        $pelanggan = self::find($id);
+        if (!$pelanggan) {
+            return null;
         }
+        $pelanggan->update($data);
+        return $pelanggan->toArray();
+
     }
 }

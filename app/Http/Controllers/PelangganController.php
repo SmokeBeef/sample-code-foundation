@@ -24,19 +24,29 @@ class PelangganController extends Controller
             $operation = $pelangganService->store($payload, $pelangganData);
 
             if (!$operation) {
-                return $this->responseError($pelangganService->errorMessage, $pelangganService->errorCode);
+                return $this->responseError($pelangganService->getErrorMessage(), $pelangganService->getCode());
             }
-            return $this->responseSuccess("success add new pelanggan", $pelangganService->data, 201);
+            return $this->responseSuccess("success add new pelanggan", $pelangganService->getData(), 201);
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }
     }
-    public function index()
+    public function index(Request $req)
     {
         $pelangganService = new PelangganService();
         try {
-            $operation = $pelangganService->findAll();
-            return $this->responseManyData("succes get all pelanggan", $pelangganService->getData());
+            $page = $req->query("page", "1");
+            $perPage = $req->query("perpage", $this->defaultTake);
+            $search = $req->query("search");
+
+            $operation = $pelangganService->findAll($page, $perPage, $search);
+            if (!$operation) {
+                return $this->responseError($pelangganService->getErrorMessage(), $pelangganService->getCode());
+            }
+
+            $meta = $pelangganService->getMetaPagination();
+
+            return $this->responseManyData("succes get pelanggan", $pelangganService->getData(), $meta);
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }
@@ -76,7 +86,7 @@ class PelangganController extends Controller
             if (!$operation) {
                 return $this->responseError($pelangganService->getErrorMessage(), $pelangganService->getCode());
             }
-            return $this->responseSuccess("success delete pelanggan id " . $id, $pelangganService->getData(), 200);
+            return $this->responseSuccess("success delete pelanggan id $id", $pelangganService->getData(), 200);
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }
