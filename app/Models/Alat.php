@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class Alat extends Model
 {
@@ -34,26 +35,35 @@ class Alat extends Model
         return $this->belongsTo(Kategori::class, "alat_kategori_id", "kategori_id");
     }
 
-    public static function paginateFilter(int $take, int $skip, ?string $search = null): array
+    public static function paginate(array $column, int $limit, int $offset, string $columnSort, string $sortDirection, ?string $search = null): array
     {
-        $query = self::query();
-        if (!!$search) {
-            $query->where("alat_nama", "like", "%$search%")
-                ->orWhere("alat_deskripsi", "like", "%$search%");
+        $query = DB::table('alats')
+            ->select($column);
+        if ($search) {
+            $query
+                ->where("alat_nama", "like", "%$search%")
+                ->orWhere("alat_deskripsi", "like", "%$search%")
+                ->orWhere("alat_hargaperhari", "like", "%$search%")
+                ->orWhere("alat_stok", "like", "%$search%");
         }
-        $query->skip($skip)->take($take);
+
+        $query->limit($limit)
+            ->offset($offset)
+            ->orderBy($columnSort, $sortDirection);
+
         $result = $query->get();
 
         return $result->toArray();
     }
 
-    public static function countFilter(?string $search): int
+    public static function countResult(?string $search): int
     {
-        $query = self::query();
-        if (!!$search) {
-            $query->where("alat_nama", "like", "%$search%", "or")
-                ->orWhere("alat_deskripsi", "like", "%$search%");
-        }
+        $query = DB::table('alats')
+            ->where("alat_nama", "like", "%$search%")
+            ->orWhere("alat_deskripsi", "like", "%$search%")
+            ->orWhere("alat_hargaperhari", "like", "%$search%")
+            ->orWhere("alat_stok", "like", "%$search%");
+
         $result = $query->count();
         return $result;
     }

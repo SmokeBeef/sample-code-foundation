@@ -1,35 +1,50 @@
 <?php
 namespace App\Services;
 
+use App\DTO\Alat\AlatQueryDTO;
 use App\Models\Alat;
 use App\Models\Penyewaan_detail;
+use App\Operation\Operation;
 
-class AlatService extends Service
+class AlatService extends Operation
 {
     public function store(array $data): bool
     {
         $result = Alat::create($data);
 
         if (!$result) {
-            $this->setError("conflict", 409);
+            $this->setMessageCode("conflict", 409);
             return false;
         }
 
-        $this->setData($result->toArray());
+        $this->setResult($result->toArray());
+        $this->setMessageCode("Success create new Alat", 201);
         return true;
 
     }
 
-    public function findAll($page, $perPage, ?string $search): bool
+    public static function findAll(AlatQueryDTO $alatDTO): Operation
     {
-        $paginate = $this->calcTakeSkip($page, $perPage);
 
-        $result = Alat::paginateFilter($paginate["take"], $paginate["skip"], $search);
-        $totalData = Alat::countFilter($search);
+        $column = $alatDTO->getColumn();
+        $limit = $alatDTO->getLimit();
+        $offset = $alatDTO->getOffset();
+        $search = $alatDTO->getSearch();
+        $sort = $alatDTO->getSort();
+        $sortBy = $alatDTO->getSortBy();
 
-        $this->setData($result);
-        $this->setTotalData($totalData);
-        return true;
+        $result = Alat::paginate($column, $limit, $offset, $sortBy, $sort, $search);
+        $totalData = Alat::countResult($search);
+
+
+        $operation = new Operation();
+        $operation->setIsSuccess(true);
+        $operation->setResult($result);
+        $operation->setTotal($totalData);
+        $operation->setMessageCode("Success get Alat",200);
+        $operation->setPaginate($alatDTO->getPage(), $limit);
+
+        return $operation;
     }
 
     public function findById($id): bool
@@ -61,10 +76,10 @@ class AlatService extends Service
     public function destroy($id)
     {
         $checkRelation = Penyewaan_detail::where("penyewaan_detail_alat_id", "=", $id)->count();
-        if($checkRelation > 0) {
+        if ($checkRelation > 0) {
             $this->setError("alat that have been ordered cannot be deleted", 409);
             return false;
-        }   
+        }
         $result = Alat::destroy($id);
         if (!$result) {
             $this->setError("alat id $id not found", 404);

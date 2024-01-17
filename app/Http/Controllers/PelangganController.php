@@ -36,7 +36,7 @@ class PelangganController extends Controller
         $pelangganService = new PelangganService();
         try {
             $page = $req->query("page", "1");
-            $perPage = $req->query("perpage", $this->defaultTake);
+            $perPage = $req->query("perpage");
             $search = $req->query("search");
 
             $operation = $pelangganService->findAll($page, $perPage, $search);

@@ -1,35 +1,46 @@
 <?php
 namespace App\Services;
 
+// - DTO
+//     - BaseDTO
+//     - QueryDTO
+//     - MutationDTO
+//     - Alat
+//         - AlatQuery
+//         - Alat Mutation
+
+// - Operation
+//     - BaseOperation
+//     - Operation
 class Service
 {
+
+    // operation = result, success, code, message, perpage, page, totalresults, totalpage -> gettr setter
+    // {
+    //     success,
+    //     code,
+    //     message,
+    //     data -> get all [{}], get 1 {},
+    //     meta: {
+    //         perpage, $this->getPerPage()
+    //         page,
+    //         totalResult,
+    //         totalPage
+    //     },
+    // }
+
+    // result, perpage, page, totalResult. totalPage, limit, search -> query dto
+
     private array|null $data = null;
     private string $errorMessage = "";
     private int $errorCode;
 
-    private $maxTake = 50;
+    private $maxTake = 50; // -> limit
     private $totalData = 0;
     private $page = 0;
     private $perPage = 0;
 
 
-    protected function calcTakeSkip($page, $take = 25): array
-    {
-        if ($take > $this->maxTake) {
-            $take = $this->maxTake;
-        }
-        if ($take < 1) {
-            $take = 1;
-        }
-        if ($page < 1) {
-            $page = 1;
-        }
-        $skip = $take * ($page - 1);
-
-        $this->page = $page;
-        $this->perPage = $take;
-        return ["take" => $take, "skip" => $skip];
-    }
 
     // getter
     public function getErrorMessage(): string

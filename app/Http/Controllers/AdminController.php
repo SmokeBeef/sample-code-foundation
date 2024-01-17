@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Dto\AdminDto;
 use App\Http\Requests\AdminRequest;
 use App\Jobs\InsertManyAdmin;
 use App\Services\AdminService;
@@ -16,7 +17,8 @@ class AdminController extends Controller
         $adminService = new AdminService();
         try {
 
-            $payload = $req->validated();
+            $payload = new AdminDto(...$req->validated());
+            dd($payload);
             $operation = $adminService->store($payload);
 
             if (!$operation) {
