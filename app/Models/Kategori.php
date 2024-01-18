@@ -26,6 +26,31 @@ class Kategori extends Model
         return $this->hasMany(Alat::class, "alat_kategori_id", "kategori_id");
     }
 
+    public static function paginate(array $column, int $limit, int $offset, string $columnSort, string $sortDirection, ?string $search = null): array
+    {
+        $query = DB::table("kategoris")
+            ->select($column);
+
+        if ($search) {
+            $query->where("kategori_nama", "like", "%$search%");
+        }
+        $query->limit($limit)
+            ->offset($offset)
+            ->orderBy($columnSort, $sortDirection);
+        $result = $query->get();
+        return $result->toArray();
+    }
+    public static function countResult(?string $search): int
+    {
+        $query = DB::table('kategoris');
+        if ($search) {
+            $query->where("kategori_nama", "like", "%$search%");
+        }
+
+        $result = $query->count();
+        return $result;
+    }
+
 
     public static function updateIfFound($id, array $data): ?array
     {
@@ -38,5 +63,5 @@ class Kategori extends Model
 
     }
 
-   
+
 }

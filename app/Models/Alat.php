@@ -35,19 +35,15 @@ class Alat extends Model
         return $this->belongsTo(Kategori::class, "alat_kategori_id", "kategori_id");
     }
 
-    public static function paginate(array $column, int $limit, int $offset, string $columnSort, string $sortDirection, ?string $search = null): array
+    public static function paginate(array $column, int $limit, int $offset, string $columnSort, string $sortDirection, string $search = ''): array
     {
         $query = DB::table('alats')
-            ->select($column);
-        if ($search) {
-            $query
-                ->where("alat_nama", "like", "%$search%")
-                ->orWhere("alat_deskripsi", "like", "%$search%")
-                ->orWhere("alat_hargaperhari", "like", "%$search%")
-                ->orWhere("alat_stok", "like", "%$search%");
-        }
-
-        $query->limit($limit)
+            ->select($column)
+            ->where("alat_nama", "like", "%$search%")
+            ->orWhere("alat_deskripsi", "like", "%$search%")
+            ->orWhere("alat_hargaperhari", "like", "%$search%")
+            ->orWhere("alat_stok", "like", "%$search%")
+            ->limit($limit)
             ->offset($offset)
             ->orderBy($columnSort, $sortDirection);
 
@@ -68,6 +64,21 @@ class Alat extends Model
         return $result;
     }
 
+
+    public static function findJoin($id, array $join, array $column): array
+    {
+        $query = DB::table("alats")
+            ->select($column);
+        if ($join["kategori"]) {
+            $query->leftJoin("kategoris", "alat_kategori_id", "=", "kategori_id");
+        }
+
+        $query->where("alat_id", "=", $id)->first();
+
+        $result = $query->get();
+        return $result->toArray();
+    }
+
     public static function updateIfFound($id, array $data): ?array
     {
         $alat = self::find($id);
@@ -77,5 +88,6 @@ class Alat extends Model
         $alat->update($data);
         return $alat->toArray();
     }
+
 
 }

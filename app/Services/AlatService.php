@@ -23,40 +23,52 @@ class AlatService extends Operation
 
     }
 
-    public static function findAll(AlatQueryDTO $alatDTO): Operation
+    public static function getAlat(AlatQueryDTO $alatQueryDTO): Operation
     {
 
-        $column = $alatDTO->getColumn();
-        $limit = $alatDTO->getLimit();
-        $offset = $alatDTO->getOffset();
-        $search = $alatDTO->getSearch();
-        $sort = $alatDTO->getSort();
-        $sortBy = $alatDTO->getSortBy();
+        $column = $alatQueryDTO->getColumn();
+        $limit = $alatQueryDTO->getLimit();
+        $offset = $alatQueryDTO->getOffset();
+        $search = $alatQueryDTO->getSearch();
+        $sort = $alatQueryDTO->getSort();
+        $sortBy = $alatQueryDTO->getSortBy();
 
         $result = Alat::paginate($column, $limit, $offset, $sortBy, $sort, $search);
         $totalData = Alat::countResult($search);
-
 
         $operation = new Operation();
         $operation->setIsSuccess(true);
         $operation->setResult($result);
         $operation->setTotal($totalData);
-        $operation->setMessageCode("Success get Alat",200);
-        $operation->setPaginate($alatDTO->getPage(), $limit);
+        $operation->setMessage("Success get Alat");
+        $operation->setCode(200);
+        $operation->setPage($alatQueryDTO->getPage());
+        $operation->setPerPage($limit);
+
 
         return $operation;
     }
 
-    public function findById($id): bool
+    public static function findById(AlatQueryDTO $alatQueryDTO): Operation
     {
+        $operation = new Operation();
 
-        $result = Alat::find($id);
-        if (!$result) {
-            $this->setError("alat id $id not found", 404);
-            return false;
+        $id = $alatQueryDTO->getId();
+
+        $join = $alatQueryDTO->getJoin();
+        $column = $alatQueryDTO->getColumn();
+
+        if ($join["kategori"]) {
+            array_push($column, ...$alatQueryDTO->getKategoriColumn());
         }
-        $this->setData($result->toArray());
-        return true;
+
+        $result = Alat::findJoin($id, $join, $column);
+        if (!$result) {
+            $operation->setOnError("alat id $id not found", 404);
+            return $operation;
+        }
+        $operation->setOnSuccess("Success get alat id $id", 200, $result);
+        return $operation;
     }
 
     public function update($id, $data): bool

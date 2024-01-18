@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DTO\Kategori\KategoriQueryDTO;
 use App\Http\Requests\KategoriRequest;
 use App\Services\KategoriService;
 use Exception;
@@ -11,14 +12,14 @@ class KategoriController extends Controller
 {
 
 
-    public function create(KategoriRequest $req)
+    public function store(KategoriRequest $req)
     {
         $kategoriService = new KategoriService();
         try {
             $payload = $req->validated();
 
             $operation = $kategoriService->create($payload);
-            
+
             if (!$operation) {
                 return $this->responseError($kategoriService->getErrorMessage(), $kategoriService->getCode());
             }
@@ -30,14 +31,28 @@ class KategoriController extends Controller
 
     }
 
-    public function index()
+    public function index(Request $req)
     {
-        $kategoriService = new KategoriService();
         try {
-            $kategoriService->findAll();
+            $page = $req->query("page", "1");
+            $perPage = $req->query("perpage", $this->defaultTake);
+            $search = $req->query("search");
+            $sort = $req->query("sort");
+            $sortBy = $req->query("sortBy");
 
-            return $this->responseManyData("success get all kategori", $kategoriService->getData());
+            $filter = [
+                "search" => $search,
+                "sort" => $sort,
+                "sortBy" => $sortBy
+            ];
+            $kategoriQueryDTO = KategoriQueryDTO::all($page, $perPage, $filter);
+            $operation = KategoriService::findAll($kategoriQueryDTO);
+
+            $meta = self::metaPagination($operation->getTotal(), $operation->getPerPage(), $operation->getPage());
+
+            return $this->responseManyData("success get all kategori", $operation->getResult(), $meta);
         } catch (Exception $err) {
+            dd($err);
             return $this->responseError("There is Error in Server");
         }
     }
@@ -51,7 +66,7 @@ class KategoriController extends Controller
                 return $this->responseError($kategoriService->getErrorMessage(), $kategoriService->getCode());
             }
             return $this->responseManyData("success get all kategori", $operation);
-            
+
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }

@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 class AdminController extends Controller
 {
 
-    public function create(AdminRequest $req)
+    public function store(AdminRequest $req)
     {
         $adminService = new AdminService();
         try {

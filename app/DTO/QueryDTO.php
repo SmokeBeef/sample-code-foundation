@@ -6,7 +6,7 @@ use App\DTO\BaseDTO;
 
 class QueryDTO extends BaseDTO
 {
-    protected array $column = ["*"];
+    protected array $column = ["*"]; //  fields
     protected int $offset;
     protected int $page;
     protected int $limit = 25;
@@ -14,28 +14,33 @@ class QueryDTO extends BaseDTO
     protected string $sort;
     protected ?string $sortBy;
 
-    public function __construct(int $page, int $perPage, array $filter)
+    public function __construct(array $configs)
     {
+        $page = $configs["page"];
+        $perPage = $configs["perpage"];
+        $sortBy = $configs["sortBy"];
+        $sortOrder = $configs["sortOrder"];
+        $search = $configs["search"];
 
         ["limit" => $limit, "offset" => $offset] = $this->calcLimitOffset($page, $perPage);
 
         $this->page = ceil(($offset + 1) / $limit);
 
-        $this->limit = $limit;
-        $this->offset = $offset;
+        $this->setLimit($limit);
+        $this->setOffset($offset);
 
-
-        $this->search = $filter["search"] ?? "";
+        $this->setSearch($search ?? "");
 
 
         // check query sort is asc or desc
-        $this->sort = in_array($filter["sort"], ["asc", "desc"]) ? $filter["sort"] : "asc";
+        $this->sort = in_array($sortOrder, ["asc", "desc"]) ? $sortOrder : "asc";
 
         // check query sortBy is same as the column
-        $isColumn = in_array($filter["sortBy"], $this->column);
-        $this->sortBy = ($filter["sortBy"] && $isColumn) ? $filter["sortBy"] : "created_at";
-
+        $isColumn = in_array($sortBy, $this->column);
+        $this->sortBy = ($sortBy && $isColumn) ? $sortBy : "created_at";
+        
     }
+    
 
 
     public function getColumn(): array
@@ -72,4 +77,31 @@ class QueryDTO extends BaseDTO
         return $this->sortBy;
     }
 
+    protected function setColumn(array $column): void {
+        $this->column = $column;
+    }
+
+    protected function setOffset(int $offset): void {
+        $this->offset = $offset;
+    }
+
+    protected function setPage(int $page): void {
+        $this->page = $page;
+    }
+
+    protected function setLimit(int $limit): void {
+        $this->limit = $limit;
+    }
+
+    protected function setSearch(?string $search): void {
+        $this->search = $search;
+    }
+
+    protected function setSort(string $sort): void {
+        $this->sort = $sort;
+    }
+
+    protected function setSortBy(?string $sortBy): void {
+        $this->sortBy = $sortBy;
+    }
 }

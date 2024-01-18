@@ -2,14 +2,15 @@
 
 namespace App\Services;
 
+use App\DTO\Kategori\KategoriQueryDTO;
 use App\Models\Alat;
 use App\Models\Kategori;
+use App\Operation\Operation;
 use Exception;
 use Illuminate\Support\Facades\Redis;
 
 class KategoriService
 {
-    use ServiceTrait;
     protected $redisKey = "kategori";
 
     public function create(array $data)
@@ -28,21 +29,24 @@ class KategoriService
 
     }
 
-    public function findAll()
+    public static function findAll(KategoriQueryDTO $kategoriQueryDTO): Operation
     {
 
-        $result = null;
-        $fromRedis = self::getFromRedis($this->redisKey);
-        if ($fromRedis) {
-            $result = $fromRedis;
-        } else {
-            $result = kategori::all();
-            Redis::set($this->redisKey, json_encode($result));
-            $result = $result->toArray();
-        }
+        $column = $kategoriQueryDTO->getColumn();
+        $limit = $kategoriQueryDTO->getLimit();
+        $offset = $kategoriQueryDTO->getOffset();
+        $search = $kategoriQueryDTO->getSearch();
+        $sort = $kategoriQueryDTO->getSort();
+        $sortBy = $kategoriQueryDTO->getSortBy();
 
-        $this->setData($result);
-        return $result;
+        $page = $kategoriQueryDTO->getPage();
+
+        $result = Kategori::paginate($column, $limit, $offset, $sort, $sortBy, $search);
+        $total = Kategori::countResult($search);
+
+        $operation = Operation::onPaginate("Success get kategori", $result, $total, $page, $limit);
+
+        return $operation;
 
     }
     public function findByIdFull($id)
@@ -77,13 +81,13 @@ class KategoriService
     public function destroy(int|string $id)
     {
         $checkHasRelation = Alat::where("alat_kategori_id", "=", $id)->count();
-        if($checkHasRelation > 0){
+        if ($checkHasRelation > 0) {
             $this->setError("this kategori has relation to alat", 409);
             return false;
         }
 
         $result = Kategori::destroy($id);
-        
+
         if (!$result) {
             $this->setError("id $id not found", 404);
             return false;
@@ -99,7 +103,7 @@ class KategoriService
     //
     private static function getFromRedis(string $key): ?array
     {
-        if(Redis::exists($key)){
+        if (Redis::exists($key)) {
             return json_decode(Redis::get($key));
         }
         return null;

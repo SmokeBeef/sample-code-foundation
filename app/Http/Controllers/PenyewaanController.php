@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class PenyewaanController extends Controller
 {
 
-    public function create(PenyewaanRequest $req)
+    public function store(PenyewaanRequest $req)
     {
         $penyewaanService = new PenyewaanService();
         try {

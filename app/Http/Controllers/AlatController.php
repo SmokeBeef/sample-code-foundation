@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 class AlatController extends Controller
 {
 
-    public function create(AlatRequest $req)
+    public function store(AlatRequest $req)
     {
         $alatService = new AlatService();
         try {
@@ -19,56 +19,73 @@ class AlatController extends Controller
             $operation = $alatService->store($payload);
 
             if (!$operation) {
-                return $this->responseError($alatService->getErrorMessage(), $alatService->getCode());
+                return $this->responseError($alatService->getMessage(), $alatService->getCode());
             }
-            return $this->responseSuccess("success add alat", $alatService->getData());
+            return $this->responseSuccess("success add alat", $alatService->getResult());
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }
     }
 
-    public function index(Request $req)
+    public function index(Request $request)
     {
         try {
 
-            $page = $req->query("page", "1");
-            $perPage = $req->query("perpage", $this->defaultTake);
-            $search = $req->query("search");
-            $sort = $req->query("sort");
-            $sortBy = $req->query("sortBy");
 
-            $filter = [
-                "search" => $search,
-                "sort" => $sort,
-                "sortBy" => $sortBy
+            $configs = [
+                'page' => $request->query('page', 1),
+                'perpage' => $request->query("perpage", $this->defaultPerPage),
+                'sortBy' => $sortBy = $request->query("sortBy", "asc"),
+                'sortOrder' => $sortOrder = $request->query("sort", "alat_id"),
+                'search' => $search = $request->query("search", '')
             ];
 
-            $alatQueryDTO = new AlatQueryDTO($page, $perPage, $filter);
+            $alatQueryDTO = new AlatQueryDTO($configs);
 
-            $operation = AlatService::findAll($alatQueryDTO);
+            $operation = AlatService::getAlat($alatQueryDTO);
 
-            if (!$operation->isSuccess) {
-                return $this->responseError($operation->getMessage(), $operation->getCode());
+            if ($operation->isSuccess) {
+                $page = $operation->getPage();
+                $perPage = $operation->getPerPage();
+                $totalData = $operation->getTotal();
+                $totalPage = ceil($totalData / $perPage);
+                $pagination = [
+                    "page" => $page,
+                    "perPage" => $perPage,
+                    "totalData" => $totalData,
+                    "totalPage" => $totalPage,
+                    "links" => [
+                        "first" => url()->current() . "?page=" . 1 . "&perpage=$perPage&sortBy=$sortBy&sortOrder=$sortOrder&search=$search",
+                        "prev" => url()->current() . "?page=" . ($page - 1) . "&perpage=$perPage&sortBy=$sortBy&sortOrder=$sortOrder&search=$search",
+                        "next" => url()->current() . "?page=" . ($page + 1) . "&perpage=$perPage&sortBy=$sortBy&sortOrder=$sortOrder&search=$search",
+                        "last" => url()->current() . "?page=" . $totalPage . "&perpage=$perPage&sortBy=$sortBy&sortOrder=$sortOrder&search=$search",
+
+                    ]
+                ];
+                return $this->responseSuccess($operation->getMessage(), $operation->getResult(), 200, $pagination);
             }
 
-            $meta = $this->metaPagination($operation->getTotal(), $operation->getPerPage(), $operation->getPage());
-
-            return $this->responseManyData("success get all alat", $operation->getResult(), $meta);
+            return $this->responseError($operation->getMessage(), $operation->getCode());
         } catch (Exception $err) {
             dd($err);
             return $this->responseError("There is Error in Server");
         }
     }
-    public function show($id)
+    public function show($id, Request $req)
     {
-        $alatService = new AlatService();
         try {
-            $operation = $alatService->findById($id);
-            if (!$operation) {
-                return $this->responseError($alatService->getErrorMessage(), $alatService->getCode());
+            $join = ["kategori" => false];
+            if ($req->has("kategori")) {
+                $join = ["kategori" => true];
             }
-            return $this->responseSuccess("success get all alat", $alatService->getData());
+
+            $operation = AlatService::findById($id);
+            if (!$operation->isSuccess) {
+                return $this->responseError($operation->getMessage(), $operation->getCode());
+            }
+            return $this->responseSuccess($operation->getMessage(), $operation->getResult(), $operation->getCode());
         } catch (Exception $err) {
+            dd($err);
             return $this->responseError("There is Error in Server");
         }
     }
@@ -80,10 +97,10 @@ class AlatController extends Controller
             $payload = $req->validated();
             $operation = $alatService->update($id, $payload);
             if (!$operation) {
-                return $this->responseError($alatService->getErrorMessage(), $alatService->getCode());
+                return $this->responseError($alatService->getMessage(), $alatService->getCode());
             }
 
-            return $this->responseSuccess("success update alat", $alatService->getData(), 201);
+            return $this->responseSuccess("success update alat", $alatService->getResult(), 201);
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }
@@ -94,9 +111,9 @@ class AlatController extends Controller
         try {
             $operation = $alatService->destroy($id);
             if (!$operation) {
-                return $this->responseError($alatService->getErrorMessage(), $alatService->getCode());
+                return $this->responseError($alatService->getMessage(), $alatService->getCode());
             }
-            return $this->responseSuccess("success delete kategori", $alatService->getData());
+            return $this->responseSuccess("success delete kategori", $alatService->getResult());
         } catch (Exception $err) {
             return $this->responseError("There is Error in Server");
         }

@@ -38,7 +38,11 @@ class AdminRequest extends FormRequest
 
     protected function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException(response([
+        $operation = $this->isMethod("POST") ? "create" : "update";
+        throw new HttpResponseException(response()->json([
+            "success" => false,
+            "code" => 400,
+            "message" => "failed to $operation admin",
             "errors" => $validator->getMessageBag()
         ], 400));
     }

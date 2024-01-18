@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 namespace App\DTO;
 
@@ -7,15 +7,19 @@ class BaseDTO
     private int $maxLimit = 50;
 
 
- 
+
     protected function calcLimitOffset($page, $perPage): array
     {
         $limit = $perPage;
-        
-        if ($perPage > $this->maxLimit) {
+        if (!is_numeric($page))
+            $page = 1;
+        if (!is_numeric($perPage))
+            $limit = 25;
+
+        if ($limit > $this->maxLimit) {
             $limit = $this->maxLimit;
         }
-        if ($perPage < 1) {
+        if ($limit < 1) {
             $limit = 1;
         }
         if ($page < 1) {
@@ -28,5 +32,4 @@ class BaseDTO
         return ["limit" => $limit, "offset" => $offset];
     }
 
-    
 }
