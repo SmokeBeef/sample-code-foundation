@@ -31,26 +31,41 @@ class KategoriController extends Controller
 
     }
 
-    public function index(Request $req)
+    public function index(Request $request)
     {
         try {
-            $page = $req->query("page", "1");
-            $perPage = $req->query("perpage", $this->defaultTake);
-            $search = $req->query("search");
-            $sort = $req->query("sort");
-            $sortBy = $req->query("sortBy");
-
-            $filter = [
-                "search" => $search,
-                "sort" => $sort,
-                "sortBy" => $sortBy
+            $configs = [
+                'page' => $request->query('page', 1),
+                'perpage' => $request->query("perpage", $this->defaultPerPage),
+                'sortBy' => $sortBy = $request->query("sortBy", "asc"),
+                'sortOrder' => $sortOrder = $request->query("sort", "alat_id"),
+                'search' => $search = $request->query("search", '')
             ];
-            $kategoriQueryDTO = KategoriQueryDTO::all($page, $perPage, $filter);
-            $operation = KategoriService::findAll($kategoriQueryDTO);
+            $kategoriQueryDTO = new KategoriQueryDTO($configs);
+            $operation = KategoriService::getAll($kategoriQueryDTO);
 
-            $meta = self::metaPagination($operation->getTotal(), $operation->getPerPage(), $operation->getPage());
+            if ($operation->isSuccess) {
+                $page = $operation->getPage();
+                $perPage = $operation->getPerPage();
+                $totalData = $operation->getTotal();
+                $totalPage = ceil($totalData / $perPage);
+                $pagination = [
+                    "page" => $page,
+                    "perPage" => $perPage,
+                    "totalData" => $totalData,
+                    "totalPage" => $totalPage,
+                    "links" => [
+                        "first" => url()->current() . "?page=" . 1 . "&perpage=$perPage&sortBy=$sortBy&sortOrder=$sortOrder&search=$search",
+                        "prev" => url()->current() . "?page=" . ($page - 1) . "&perpage=$perPage&sortBy=$sortBy&sortOrder=$sortOrder&search=$search",
+                        "next" => url()->current() . "?page=" . ($page + 1) . "&perpage=$perPage&sortBy=$sortBy&sortOrder=$sortOrder&search=$search",
+                        "last" => url()->current() . "?page=" . $totalPage . "&perpage=$perPage&sortBy=$sortBy&sortOrder=$sortOrder&search=$search",
 
-            return $this->responseManyData("success get all kategori", $operation->getResult(), $meta);
+                    ]
+                ];
+                return $this->responseSuccess($operation->getMessage(), $operation->getResult(), 200, $pagination);
+            }
+
+            return $this->responseError($operation->getMessage(), $operation->getCode());
         } catch (Exception $err) {
             dd($err);
             return $this->responseError("There is Error in Server");

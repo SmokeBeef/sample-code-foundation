@@ -36,7 +36,7 @@ class Kategori extends Model
         }
         $query->limit($limit)
             ->offset($offset)
-            ->orderBy($columnSort, $sortDirection);
+            ->orderBy($sortDirection, $columnSort);
         $result = $query->get();
         return $result->toArray();
     }

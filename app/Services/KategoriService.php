@@ -29,7 +29,7 @@ class KategoriService
 
     }
 
-    public static function findAll(KategoriQueryDTO $kategoriQueryDTO): Operation
+    public static function getAll(KategoriQueryDTO $kategoriQueryDTO): Operation
     {
 
         $column = $kategoriQueryDTO->getColumn();
