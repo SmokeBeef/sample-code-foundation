@@ -33,42 +33,98 @@ class Penyewaan extends Model
     }
     public function penyewaanDetail(): HasMany
     {
-        return $this->hasMany(Penyewaan_detail::class, "penyewaan_detail_penyewaan_id", "penyewaan_id");
+        return $this->hasMany(PenyewaanDetail::class, "penyewaan_detail_penyewaan_id", "penyewaan_id");
     }
 
 
-    public static function createNew(array $data, array $dataDetail): array
+    public static function create(array $data, array $dataDetail): ?array
     {
-        DB::beginTransaction();
-        $result = self::create($data);
-        $result->penyewaanDetail()->createMany($dataDetail);
-        DB::commit();
+        $result = null;
+        try {
+            $payloadPenyewaan = [
+                ...$data,
+                "created_at" => now(),
+                "updated_at" => now(),
+            ];
+            DB::beginTransaction();
+            $query = DB::table("penyewaans")->insertGetId($payloadPenyewaan);
+            $payloadDetail = array_map(function ($data) use ($query) {
+                return [
+                    ...$data,
+                    "penyewaan_detail_penyewaan_id" => $query,
+                    "created_at" => now(),
+                    "updated_at" => now(),
+                ];
+            }, $dataDetail);
+
+            DB::table("penyewaan_details")->insert($payloadDetail);
+            DB::commit();
+
+            $result = [...$payloadPenyewaan, "detailPenyewaan" => $payloadDetail];
+
+        } catch (Exception $err) {
+            DB::rollBack();
+        }
+        return $result;
+
+    }
+
+    public static function paginate(array $column, int $limit, int $offset, string $sortBy, string $sortOrder, string $search = ''): array
+    {
+        $query = DB::table('penyewaans')
+            ->select($column)
+            ->leftJoin("pelanggans", "penyewaan_pelanggan_id", "=", "pelanggan_id")
+            ->leftJoin("penyewaan_details", "penyewaan_id", "=", "penyewaan_detail_penyewaan_id")
+            ->where("penyewaan_sttspembayaran", "like", "%$search%")
+            ->orWhere("penyewaan_sttskembali", "like", "%$search%")
+            ->orWhere("pelanggans.pelanggan_nama", "like", "%$search%")
+            ->orWhere("pelanggans.pelanggan_alamat", "like", "%$search%")
+            ->orWhere("pelanggans.pelanggan_notelp", "like", "%$search%")
+            ->offset($offset)
+            ->limit($limit)
+            ->orderBy($sortBy, $sortOrder);
+
+        $result = $query->get();
+
         return $result->toArray();
 
     }
-
-    public static function findAllJoin(string ...$relations): array
+    public static function countResult(string $search = ''): int
     {
+        $query = DB::table('penyewaans')
+            ->leftJoin("pelanggans", "penyewaan_pelanggan_id", "=", "pelanggan_id")
+            ->leftJoin("penyewaan_details", "penyewaan_id", "=", "penyewaan_detail_penyewaan_id")
+            ->where("penyewaan_sttspembayaran", "like", "%$search%")
+            ->orWhere("penyewaan_sttskembali", "like", "%$search%")
+            ->orWhere("pelanggans.pelanggan_nama", "like", "%$search%")
+            ->orWhere("pelanggans.pelanggan_alamat", "like", "%$search%")
+            ->orWhere("pelanggans.pelanggan_notelp", "like", "%$search%");
 
 
-        $query = Penyewaan::query();
-        foreach ($relations as $relation) {
-            $query->with($relation);
-        }
-        $result = $query->get()->toArray();
+
+        $result = $query->count();
 
         return $result;
 
     }
-    public static function findByIdJoin($id, string ...$relations): ?array
+
+
+    public static function getById($id): ?array
     {
 
 
-        $query = Penyewaan::query();
-        foreach ($relations as $relation) {
-            $query->with($relation);
-        }
-        $result = $query->find($id);
+        $query = DB::table("penyewaans")
+            ->select([
+                "penyewaans.*",
+                "penyewaan_details.*",
+                "alats.alat_nama",
+                "alats.alat_hargaperhari"
+            ])
+            ->leftJoin("pelanggans", "penyewaan_pelanggan_id", "=", "pelanggan_id")
+            ->leftJoin("penyewaan_details", "penyewaan_id", "=", "penyewaan_detail_penyewaan_id")
+            ->leftJoin("alats", "penyewaan_details.penyewaan_detail_alat_id", "=", "alat_id")
+            ->where("penyewaan_id", "=", $id);
+        $result = $query->get();
         if (!$result) {
             return null;
         }
@@ -76,31 +132,36 @@ class Penyewaan extends Model
 
     }
 
-    public static function updateIfExist($id, array $data): ?array
+    public static function updatePenyewaan(int|string $id, array $data): ?array
     {
-        $result = self::find($id);
-        if (!$result) {
-            return null;
-        }
+        $query = DB::table("penyewaans")
+            ->select()
+            ->where("penyewaan_id", "=", $id);
 
-        $result->update($data);
+        $query->update($data);
 
-        return $result->toArray();
+        return (array) $query->first();
     }
-    public static function deleteIfExist($id): ?array
+    public static function destroy($id): ?array
     {
-        $result = self::find($id);
-        if (!$result) {
-            return null;
-        }
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
-            $result->penyewaanDetail()->delete();
-            $result->delete();
+            $query = DB::table("penyewaans")
+                ->where("penyewaan_id", "=", $id);
+            DB::table("penyewaan_details")
+                ->where("penyewaan_detail_penyewaan_id", "=", $id)
+                ->delete();
+
+            $result = $query->get();
+            if (!$result) {
+                return null;
+            }
+            $query->delete();
             DB::commit();
-        } catch (\Throwable $th) {
+        } catch (Exception $th) {
             DB::rollBack();
         }
+
         return $result->toArray();
 
     }

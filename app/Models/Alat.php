@@ -27,7 +27,7 @@ class Alat extends Model
     ];
     public function penyewaanDetail(): HasMany
     {
-        return $this->hasMany(Penyewaan_detail::class, "penyewaan_detail_alat_id", "alat_id");
+        return $this->hasMany(PenyewaanDetail::class, "penyewaan_detail_alat_id", "alat_id");
     }
 
     public function kategori(): BelongsTo

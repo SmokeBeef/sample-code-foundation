@@ -6,46 +6,30 @@ use App\DTO\BaseDTO;
 
 class QueryDTO extends BaseDTO
 {
-    protected array $column = ["*"]; //  fields
+    protected array $fields = ["*"]; //  fields
     protected int $offset;
     protected int $page;
     protected int $limit = 25;
     protected ?string $search;
-    protected string $sort;
+    protected string $sortOrder;
     protected ?string $sortBy;
 
     public function __construct(array $configs)
     {
-        $page = $configs["page"];
-        $perPage = $configs["perpage"];
-        $sortBy = $configs["sortBy"];
-        $sortOrder = $configs["sortOrder"];
-        $search = $configs["search"];
-
-        ["limit" => $limit, "offset" => $offset] = $this->calcLimitOffset($page, $perPage);
-
-        $this->page = ceil(($offset + 1) / $limit);
-
-        $this->setLimit($limit);
-        $this->setOffset($offset);
-
-        $this->setSearch($search ?? "");
-
-
-        // check query sort is asc or desc
-        $this->sort = in_array($sortOrder, ["asc", "desc"]) ? $sortOrder : "asc";
-
-        // check query sortBy is same as the column
-        $isColumn = in_array($sortBy, $this->column);
-        $this->sortBy = ($sortBy && $isColumn) ? $sortBy : "created_at";
-        
+        $validatedConfigs = $this->queryConfigsValidation($configs, $this->fields);
+        $this->setLimit($validatedConfigs["limit"]);
+        $this->setOffset($validatedConfigs["offset"]);
+        $this->setPage($validatedConfigs["page"]);
+        $this->setSortOrder($validatedConfigs["sortOrder"]);
+        $this->setSortBy($validatedConfigs["sortBy"]);
+        $this->setSearch($validatedConfigs["search"]);
     }
-    
 
 
-    public function getColumn(): array
+
+    public function getField(): array
     {
-        return $this->column;
+        return $this->fields;
     }
 
     public function getLimit(): int
@@ -67,9 +51,9 @@ class QueryDTO extends BaseDTO
         return $this->search;
     }
 
-    public function getSort(): string
+    public function getSortOrder(): string
     {
-        return $this->sort;
+        return $this->sortOrder;
     }
 
     public function getSortBy(): ?string
@@ -77,31 +61,38 @@ class QueryDTO extends BaseDTO
         return $this->sortBy;
     }
 
-    protected function setColumn(array $column): void {
-        $this->column = $column;
+    protected function setField(array $fields): void
+    {
+        $this->fields = $fields;
     }
 
-    protected function setOffset(int $offset): void {
+    protected function setOffset(int $offset): void
+    {
         $this->offset = $offset;
     }
 
-    protected function setPage(int $page): void {
+    protected function setPage(int $page): void
+    {
         $this->page = $page;
     }
 
-    protected function setLimit(int $limit): void {
+    protected function setLimit(int $limit): void
+    {
         $this->limit = $limit;
     }
 
-    protected function setSearch(?string $search): void {
+    protected function setSearch(?string $search): void
+    {
         $this->search = $search;
     }
 
-    protected function setSort(string $sort): void {
-        $this->sort = $sort;
+    protected function setSortOrder(string $sortOrder): void
+    {
+        $this->sortOrder = $sortOrder;
     }
 
-    protected function setSortBy(?string $sortBy): void {
+    protected function setSortBy(?string $sortBy): void
+    {
         $this->sortBy = $sortBy;
     }
 }

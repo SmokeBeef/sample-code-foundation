@@ -103,21 +103,14 @@ class Controller extends BaseController
     }
     protected function responseSuccess(string $message, mixed $data = null, int $code = 200, ?array $pagination = null): JsonResponse
     {
-        if ($pagination)
-            return response()->json([
-                "success" => true,
-                "code" => $code,
-                "message" => $message,
-                "data" => $data,
-                "pagination" => $pagination
-            ], $code);
-        else
-            return response()->json([
-                "success" => true,
-                "code" => $code,
-                "message" => $message,
-                "data" => $data,
-            ], $code);
+        return response()->json([
+            "success" => true,
+            "code" => $code,
+            "message" => $message,
+            "data" => $data,
+            "pagination" => $pagination
+        ], $code);
+
     }
     protected function responseError(string $message, int $code = 500, $data = null): JsonResponse
     {

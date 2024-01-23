@@ -3,7 +3,7 @@ namespace App\Services;
 
 use App\DTO\Alat\AlatQueryDTO;
 use App\Models\Alat;
-use App\Models\Penyewaan_detail;
+use App\Models\PenyewaanDetail;
 use App\Operation\Operation;
 
 class AlatService extends Operation
@@ -25,12 +25,11 @@ class AlatService extends Operation
 
     public static function getAlat(AlatQueryDTO $alatQueryDTO): Operation
     {
-
-        $column = $alatQueryDTO->getColumn();
+        $column = $alatQueryDTO->getField();
         $limit = $alatQueryDTO->getLimit();
         $offset = $alatQueryDTO->getOffset();
         $search = $alatQueryDTO->getSearch();
-        $sort = $alatQueryDTO->getSort();
+        $sort = $alatQueryDTO->getSortOrder();
         $sortBy = $alatQueryDTO->getSortBy();
 
         $result = Alat::paginate($column, $limit, $offset, $sortBy, $sort, $search);
@@ -87,7 +86,7 @@ class AlatService extends Operation
 
     public function destroy($id)
     {
-        $checkRelation = Penyewaan_detail::where("penyewaan_detail_alat_id", "=", $id)->count();
+        $checkRelation = PenyewaanDetail::where("penyewaan_detail_alat_id", "=", $id)->count();
         if ($checkRelation > 0) {
             $this->setError("alat that have been ordered cannot be deleted", 409);
             return false;

@@ -5,7 +5,7 @@ use App\DTO\QueryDTO;
 
 class AlatQueryDTO extends QueryDTO
 {
-    protected array $column = ["alat_id", "alat_kategori_id", "alat_nama", "alat_deskripsi", "alat_hargaperhari", "alat_stok"];
+    protected array $fields = ["alat_id", "alat_kategori_id", "alat_nama", "alat_deskripsi", "alat_hargaperhari", "alat_stok"];
     protected array $kategoriColumn = ["kategori_id", "kategori_nama"];
     protected ?int $id = null;
 
@@ -21,10 +21,6 @@ class AlatQueryDTO extends QueryDTO
         $this->id = $id;
     }
 
-    public function getColumn(): array
-    {
-        return $this->column;
-    }
 
     
 }

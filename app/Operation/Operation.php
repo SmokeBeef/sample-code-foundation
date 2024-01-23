@@ -14,66 +14,12 @@ class Operation extends BaseOperation
     private $perPage = 0;
     public bool $isSuccess;
 
-    public static function onSuccess(string $message, int $code, mixed $result, ?array $paginate = null): self
-    {
-        $operation = new Operation();
-        $operation->setMessage($message);
-        $operation->setCode($code);
-        $operation->setResult($result);
-        $operation->setIsSuccess(true);
 
-        return $operation;
-    }
-    public static function onPaginate(string $message, mixed $result, int $total, int $page, int $perPage): self
-    {
-        $operation = new Operation();
-        $operation->setMessage($message);
-        $operation->setCode(200);
-        $operation->setResult($result);
-        $operation->setIsSuccess(true);
-
-        $operation->setPaginate($page, $perPage);
-        $operation->setTotal($total);
-
-        return $operation;
-    }
-
-    protected function setMessageCode(string $message, int $code): void
-    {
-        $this->setCode($code);
-        $this->setMessage($message);
-    }
 
     protected function setIsSuccess(bool $isSuccess): void
     {
         $this->isSuccess = $isSuccess;
     }
-
-    public function setPaginate(int $page, int $perPage): void
-    {
-        $this->page = $page;
-        $this->perPage = $perPage;
-    }
-
-    protected function setOnSuccess(string $message, int $code, array $result): void
-    {
-        $this->setMessage($message);
-        $this->setCode($code);
-        $this->setResult($result);
-        $this->setIsSuccess(true);
-    }
-    protected function setOnError(string $message, int $code): void
-    {
-        $this->setMessage($message);
-        $this->setCode($code);
-        $this->setIsSuccess(false);
-    }
-
-
-
-
-
-
 
 
 

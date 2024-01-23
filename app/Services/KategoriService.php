@@ -32,11 +32,11 @@ class KategoriService
     public static function getAll(KategoriQueryDTO $kategoriQueryDTO): Operation
     {
 
-        $column = $kategoriQueryDTO->getColumn();
+        $column = $kategoriQueryDTO->getField();
         $limit = $kategoriQueryDTO->getLimit();
         $offset = $kategoriQueryDTO->getOffset();
         $search = $kategoriQueryDTO->getSearch();
-        $sort = $kategoriQueryDTO->getSort();
+        $sort = $kategoriQueryDTO->getSortOrder();
         $sortBy = $kategoriQueryDTO->getSortBy();
 
         $page = $kategoriQueryDTO->getPage();

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\DTO\Penyewaan\PenyewaanMutationDTO;
+use App\DTO\Penyewaan\PenyewaanQueryDTO;
 use App\Http\Requests\PenyewaanRequest;
 use App\Services\PenyewaanService;
 use Exception;
@@ -12,34 +14,62 @@ class PenyewaanController extends Controller
 
     public function store(PenyewaanRequest $req)
     {
-        $penyewaanService = new PenyewaanService();
         try {
             $payload = $req->validated();
-            $detail = $payload["detail"];
 
-            unset($payload["detail"]);
+            $penyewaanMutationDTO = new PenyewaanMutationDTO($payload);
 
-            $operation = $penyewaanService->store($payload, $detail);
+            $operation = PenyewaanService::store($penyewaanMutationDTO);
+            if ($operation->isSuccess) {
+                return $this->responseSuccess($operation->getMessage(), $operation->getResult(), $operation->getCode());
+            }
 
-            return $this->responseSuccess("success create new penyewaan", $penyewaanService->getData(), 201);
+            return $this->responseError($operation->getMessage(), $operation->getCode());
         } catch (Exception $err) {
             return $this->responseError("there is error in internal server");
         }
     }
 
-    public function index(Request $req)
+    public function index(Request $request)
     {
-        $penyewaanService = new PenyewaanService();
         try {
-            $join = [];
-            if ($req->has("pelanggan")) {
-                array_push($join, "pelanggan");
+            $sortBy = $request->query("sortBy", "penyewaan_id");
+            $sortOrder = $request->query("sortOrder", "asc");
+            $search = $request->query("search", "");
+            $configs = [
+                "page" => $request->query("page", 1),
+                "perpage" => $request->query("perpage", 25),
+                "search" => $search,
+                "sortBy" => $sortBy,
+                "sortOrder" => $sortOrder,
+            ];
+            $penyewaanQueryDTO = new PenyewaanQueryDTO($configs);
+
+
+
+            $operation = PenyewaanService::getPenyewaan($penyewaanQueryDTO);
+            if ($operation->isSuccess) {
+                $page = $operation->getPage();
+                $perPage = $operation->getPerPage();
+                $totalData = $operation->getTotal();
+                $totalPage = ceil($totalData / $perPage);
+                $pagination = [
+                    "page" => $page,
+                    "perPage" => $perPage,
+                    "totalData" => $totalData,
+                    "totalPage" => $totalPage,
+                    "links" => [
+                        "first" => url()->current() . "?page=" . 1 . "&perpage=$perPage&sortBy=$sortBy&sortOrder=$sortOrder&search=$search",
+                        "prev" => url()->current() . "?page=" . ($page - 1) . "&perpage=$perPage&sortBy=$sortBy&sortOrder=$sortOrder&search=$search",
+                        "next" => url()->current() . "?page=" . ($page + 1) . "&perpage=$perPage&sortBy=$sortBy&sortOrder=$sortOrder&search=$search",
+                        "last" => url()->current() . "?page=" . $totalPage . "&perpage=$perPage&sortBy=$sortBy&sortOrder=$sortOrder&search=$search",
+
+                    ]
+                ];
+                return $this->responseSuccess($operation->getMessage(), $operation->getResult(), 200, $pagination);
+
             }
-            if ($req->has("detail")) {
-                array_push($join, "penyewaanDetail");
-            }
-            $operation = $penyewaanService->findAll($join);
-            return $this->responseSuccess("success get all penyewaan", $penyewaanService->getData());
+            return $this->responseError($operation->getMessage(), $operation->getCode());
         } catch (Exception $err) {
             dd($err);
             return $this->responseError("there is error in internal server");
@@ -48,7 +78,7 @@ class PenyewaanController extends Controller
 
     public function show($id, Request $req)
     {
-        $penyewaanService = new PenyewaanService();
+
         try {
             $join = [];
             if ($req->has("pelanggan")) {
@@ -58,61 +88,61 @@ class PenyewaanController extends Controller
                 array_push($join, "penyewaanDetail");
             }
 
-            $operation = $penyewaanService->findById($id, $join);
+            $operation = PenyewaanService::getById($id);
 
-            if (!$operation) {
-                return $this->responseError($penyewaanService->getErrorMessage(), $penyewaanService->getCode());
+            if ($operation->isSuccess) {
+                return $this->responseSuccess($operation->getMessage(), $operation->getResult(), $operation->getCode());
             }
-            
-            return $this->responseSuccess("success get penyewaan id " . $id, $penyewaanService->getData());
-        } catch (Exception $err) {
 
+            return $this->responseError($operation->getMessage(), $operation->getCode());
+        } catch (Exception $err) {
+            dd($err);
             return $this->responseError("there is error in internal server");
         }
     }
-    public function showFull($id)
-    {
-        $penyewaanService = new PenyewaanService();
-        try {
+    // public function showFull($id)
+    // {
+    //     $penyewaanService = new PenyewaanService();
+    //     try {
 
-            $operation = $penyewaanService->findFull($id);
+    //         $operation = $penyewaanService->findFull($id);
 
-            if (!$operation) {
-                return $this->responseError($penyewaanService->getErrorMessage(), $penyewaanService->getCode());
-            }
-            
-            return $this->responseSuccess("success get penyewaan id " . $id, $penyewaanService->getData());
-        } catch (Exception $err) {
+    //         if (!$operation) {
+    //             return $this->responseError($penyewaanService->getErrorMessage(), $penyewaanService->getCode());
+    //         }
 
-            return $this->responseError("there is error in internal server");
-        }
-    }
+    //         return $this->responseSuccess("success get penyewaan id " . $id, $penyewaanService->getData());
+    //     } catch (Exception $err) {
+
+    //         return $this->responseError("there is error in internal server");
+    //     }
+    // }
 
     public function update(PenyewaanRequest $req, $id)
     {
-        $penyewaanService = new PenyewaanService();
+
         try {
             $payload = $req->validated();
-            $operation = $penyewaanService->update($id, $payload);
-            if (!$operation) {
-                return $this->responseError($penyewaanService->getErrorMessage(), $penyewaanService->getCode());
+            $penyewaanMutationDTO = new PenyewaanMutationDTO($payload, $id);
+            $operation = PenyewaanService::update($penyewaanMutationDTO);
+            if ($operation->isSuccess) {
+                return $this->responseSuccess($operation->getMessage(), $operation->getResult(), $operation->getCode());
             }
-            return $this->responseSuccess("success update penyewaan id " . $id, $penyewaanService->getData(), 201);
+            return $this->responseError($operation->getMessage(), $operation->getCode());
         } catch (Exception $err) {
             return $this->responseError("there is error in internal server");
         }
     }
     public function destroy($id)
     {
-        $penyewaanService = new PenyewaanService();
         try {
-            $operation = $penyewaanService->destroy($id);
-            if (!$operation) {
-                return $this->responseError($penyewaanService->getErrorMessage(), $penyewaanService->getCode());
+            $operation = PenyewaanService::destroy($id);
+            if ($operation->isSuccess) {
+                return $this->responseSuccess($operation->getMessage(), $operation->getResult(), $operation->getCode());
             }
-
-            return $this->responseSuccess("success delete penyewaan id " . $id, $penyewaanService->getData(), 201);
+            return $this->responseError($operation->getMessage(), $operation->getCode());
         } catch (Exception $err) {
+            dd($err);
             return $this->responseError("there is error in internal server");
         }
     }

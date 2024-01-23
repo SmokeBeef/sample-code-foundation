@@ -36,7 +36,7 @@ class AlatController extends Controller
                 'page' => $request->query('page', 1),
                 'perpage' => $request->query("perpage", $this->defaultPerPage),
                 'sortBy' => $sortBy = $request->query("sortBy", "asc"),
-                'sortOrder' => $sortOrder = $request->query("sort", "alat_id"),
+                'sortOrder' => $sortOrder = $request->query("sortOrder", "alat_id"),
                 'search' => $search = $request->query("search", '')
             ];
 

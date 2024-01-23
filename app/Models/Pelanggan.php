@@ -26,7 +26,7 @@ class Pelanggan extends Model
     ];
     public function pelangganData(): HasOne
     {
-        return $this->hasOne(Pelanggan_data::class, "pelanggan_data_pelanggan_id", "pelanggan_id");
+        return $this->hasOne(PelangganData::class, "pelanggan_data_pelanggan_id", "pelanggan_id");
     }
     public function penyewaan(): HasMany
     {
